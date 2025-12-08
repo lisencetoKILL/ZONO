@@ -1,0 +1,15 @@
+const mongoose = require('mongoose');
+
+const activeAttendanceSchema = new mongoose.Schema({
+    department: String,
+    date: String,
+    classNumber: String,
+    classroomId: String, // or coordinates if needed
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        expires: 120, // expire after 2 minute (auto-remove using TTL index)
+    }
+});
+
+module.exports = mongoose.model('ActiveAttendanceSession', activeAttendanceSchema);
