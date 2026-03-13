@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import loginImg from '../loginImg.png';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Navbar from './Navbar';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -24,24 +25,31 @@ const LoginPage = () => {
     }
 
     return (
-        <div className="bg-white flex h-screen">
-            <div className="w-2/5 flex justify-start items-center">
+        <div className="bg-white dark:bg-[#020617] text-[#0F172A] dark:text-[#E2E8F0] min-h-screen flex flex-col lg:flex-row transition-colors duration-300">
+            <Navbar />
+
+            {/* Left Image Side (hidden on small screens) */}
+            <div className="hidden lg:flex lg:w-2/5 justify-start items-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-blue-600/10 mix-blend-multiply dark:mix-blend-overlay z-10" />
                 <img
                     src={loginImg}
                     alt="Login Illustration"
-                    className="object-cover h-full w-full"
+                    className="object-cover h-full w-full dark:opacity-80 transition-opacity"
                 />
             </div>
-            <div className="w-3/5 flex justify-center items-center bg-[#f3f4f6]">
-                <div className="w-full p-10 bg-white shadow-xl rounded-lg ml-32 mr-32">
-                    <h2 className="text-3xl text-center mb-6">Welcome Back!</h2>
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="email">
+
+            {/* Right Form Side */}
+            <div className="flex-1 flex justify-center items-center bg-[#F8FAFC] dark:bg-[#020617] px-6 py-24 sm:px-12 transition-colors duration-300">
+                <div className="w-full max-w-md p-8 sm:p-10 bg-white dark:bg-slate-900 shadow-xl dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors">
+                    <h2 className="text-3xl font-bold tracking-tight text-center mb-8 text-slate-900 dark:text-white">Welcome Back!</h2>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-slate-700 dark:text-slate-300 text-sm font-semibold mb-2" htmlFor="email">
                                 Email
                             </label>
                             <input
-                                className="input input-bordered w-full h-12 text-lg"
+                                className="w-full px-4 h-12 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
                                 id="email"
                                 type="email"
                                 placeholder="Enter your email"
@@ -50,12 +58,12 @@ const LoginPage = () => {
                             />
                         </div>
 
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-2" htmlFor="password">
+                        <div>
+                            <label className="block text-slate-700 dark:text-slate-300 text-sm font-semibold mb-2" htmlFor="password">
                                 Password
                             </label>
                             <input
-                                className="input input-bordered w-full h-12 text-lg"
+                                className="w-full px-4 h-12 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"
                                 id="password"
                                 type="password"
                                 placeholder="Enter your password"
@@ -64,15 +72,15 @@ const LoginPage = () => {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between">
-                            <button className="btn btn-success w-full h-12 text-lg" type="submit">
+                        <div className="pt-2">
+                            <button className="w-full inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold h-12 rounded-xl transition-all shadow-lg shadow-blue-600/25 active:scale-[0.98]" type="submit">
                                 Log In
                             </button>
                         </div>
                     </form>
 
-                    <div className="text-center mt-4">
-                        <button className="text-sm text-[#1E40AF] hover:underline">
+                    <div className="text-center mt-6">
+                        <button className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline transition-colors">
                             Forgot Password?
                         </button>
                     </div>

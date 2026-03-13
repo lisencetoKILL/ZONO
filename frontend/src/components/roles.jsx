@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 const Roles = () => {
     const [selectedRole, setSelectedRole] = useState(null);
@@ -15,9 +16,11 @@ const Roles = () => {
     };
 
     return (
-        <div className="p-10 bg-[#f3f4f6]">
-            <div className="text-center">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-20 text-[#f97316]">
+        <div className="bg-[#F8FAFC] dark:bg-[#020617] text-[#0F172A] dark:text-[#E2E8F0] min-h-screen pt-28 pb-10 px-6 flex flex-col transition-colors duration-300">
+            <Navbar />
+
+            <div className="flex-1 flex flex-col justify-center text-center max-w-4xl mx-auto w-full">
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-20 text-slate-900 dark:text-white">
                     Please Select Your Role
                 </h1>
 
@@ -26,27 +29,33 @@ const Roles = () => {
                     {/* User Role - Parent */}
                     <div
                         onClick={() => handleRoleSelect('parent')}
-                        className={`card rounded-lg shadow-xl h-60 w-60 flex flex-col justify-center items-center cursor-pointer ${selectedRole === 'parent' ? 'bg-blue-100 border-4 border-[#1E40AF]' : 'bg-white'} `}
+                        className={`card rounded-2xl shadow-xl h-60 w-60 flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${selectedRole === 'parent'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 border-4 border-blue-600 dark:border-blue-500 scale-105'
+                            : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600'
+                            } `}
                     >
                         {/* Parent SVG */}
-                        <div className="size-32 mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" className="w-24 h-24 ml-4 opacity-80">
+                        <div className="size-32 mb-3 mt-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" className={`w-24 h-24 ml-4 transition-colors ${selectedRole === 'parent' ? 'fill-blue-600 dark:fill-blue-400 opacity-100' : 'fill-slate-700 dark:fill-slate-400 opacity-80'}`}>
                                 <path d="M117.49326,98.27951a11.41528,11.41528,0,0,0-6.1519-8.2847c-10.697-5.33411-34.17046-13.212-34.17046-13.212V69.03229l.65343-.49313a22.42566,22.42566,0,0,0,8.51484-14.25174l.13151-.826h.637a8.66287,8.66287,0,0,0,8.01764-5.39167A9.43369,9.43369,0,0,0,96.30471,43.5a8.67979,8.67979,0,0,0-.61644-3.21363A4.48227,4.48227,0,0,0,93.95,37.49191l-2.16572-1.315.53834-2.35062c3.91226-17.0544-9.29979-32.41574-27.04046-32.839C64.85067.979,64.42327.975,64,.98315,63.57669.975,63.14933.979,62.71783.98726c-17.74068.42329-30.95269,15.78463-27.04046,32.839l.53834,2.35062L34.05,37.49191a4.48232,4.48232,0,0,0-1.73833,2.79448A8.67976,8.67976,0,0,0,31.69529,43.5a9.4333,9.4333,0,0,0,1.17942,4.56973,8.66286,8.66286,0,0,0,8.0176,5.39167h.637l.13151.826a22.42566,22.42566,0,0,0,8.51484,14.25174l.65343.49313v7.75047s-23.4734,7.87794-34.17042,13.212a11.4151,11.4151,0,0,0-6.1519,8.2847c-1.83285,10.697-2.15747,28.7418-2.15747,28.7418H119.65073S119.32607,108.97654,117.49326,98.27951Z"></path>
                             </svg>
-                            <p className="mt-9 text-[#1f2937] text-3xl">Parent</p>
+                            <p className={`mt-9 text-2xl font-bold transition-colors ${selectedRole === 'parent' ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>Parent</p>
                         </div>
                     </div>
 
 
-                    <div className="divider divider-horizontal">OR</div>
+                    <div className="divider divider-horizontal before:bg-slate-300 after:bg-slate-300 dark:before:bg-slate-700 dark:after:bg-slate-700 text-slate-500 font-semibold mx-4">OR</div>
 
                     {/* User Role - Staff */}
                     <div
                         onClick={() => handleRoleSelect('staff')}
-                        className={`card rounded-lg shadow-xl h-60 w-60 flex flex-col justify-center items-center cursor-pointer ${selectedRole === 'staff' ? 'bg-blue-100 border-4 border-[#1E40AF]' : 'bg-white'} `}
+                        className={`card rounded-2xl shadow-xl h-60 w-60 flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${selectedRole === 'staff'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 border-4 border-blue-600 dark:border-blue-500 scale-105'
+                            : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600'
+                            } `}
                     >
                         {/* Teacher SVG */}
-                        <div className="size-24 mb-10 ml-6 opacity-80">
+                        <div className="size-24 mb-10 ml-6 mt-4">
                             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 157.9442 239.5764" enable-background="new 0 0 157.9442 239.5764">
                                 <g>
                                     <path d="M11.5606,123.8221c-0.1254,0.7064-0.2025,1.4297-0.2025,2.1722v101.2188c0,6.8301,5.5371,12.3633,12.3633,12.3633
@@ -68,13 +77,13 @@ const Roles = () => {
                                 </g>
                             </svg>
                         </div>
-                        <p className="mt-6 text-[#1f2937] text-3xl">Faculty</p>
+                        <p className={`mt-6 ml-[-24px] text-2xl font-bold transition-colors ${selectedRole === 'staff' ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>Faculty</p>
                     </div>
                 </div>
 
                 <button
                     onClick={handleClick}
-                    className="btn btn-success text-[#f3f4f6] pl-14 pr-14 mt-36 font-bold text-xl mb-20"
+                    className="mt-20 self-center inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg px-12 py-4 rounded-xl transition-all shadow-xl shadow-blue-600/25 active:scale-[0.97] w-fit"
                 >
                     Continue
                 </button>
