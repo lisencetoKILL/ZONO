@@ -16,77 +16,100 @@ const Roles = () => {
     };
 
     return (
-        <div className="bg-[#F8FAFC] dark:bg-[#020617] text-[#0F172A] dark:text-[#E2E8F0] min-h-screen pt-28 pb-10 px-6 flex flex-col transition-colors duration-300">
+        <div className="bg-[#F8FAFC] dark:bg-[#020617] text-[#0F172A] dark:text-[#E2E8F0] min-h-screen pt-28 pb-10 px-6 flex flex-col transition-colors duration-300 relative overflow-hidden">
+            {/* Background elements to match landing page */}
+            <div className="pointer-events-none absolute inset-0"
+                style={{
+                    backgroundImage: `linear-gradient(rgba(148,163,184,0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px)`,
+                    backgroundSize: "48px 48px",
+                }}
+            />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="w-[800px] h-[500px] rounded-full bg-blue-600/5 blur-[120px]" />
+            </div>
+
             <Navbar />
 
-            <div className="flex-1 flex flex-col justify-center text-center max-w-4xl mx-auto w-full">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-20 text-slate-900 dark:text-white">
-                    Please Select Your Role
-                </h1>
-
-                {/* Role Selection Div */}
-                <div className=" rounded-2xl p-8 flex justify-center gap-10">
-                    {/* User Role - Parent */}
-                    <div
-                        onClick={() => handleRoleSelect('parent')}
-                        className={`card rounded-2xl shadow-xl h-60 w-60 flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${selectedRole === 'parent'
-                            ? 'bg-blue-50 dark:bg-blue-900/30 border-4 border-blue-600 dark:border-blue-500 scale-105'
-                            : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600'
-                            } `}
-                    >
-                        {/* Parent SVG */}
-                        <div className="size-32 mb-3 mt-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" className={`w-24 h-24 ml-4 transition-colors ${selectedRole === 'parent' ? 'fill-blue-600 dark:fill-blue-400 opacity-100' : 'fill-slate-700 dark:fill-slate-400 opacity-80'}`}>
-                                <path d="M117.49326,98.27951a11.41528,11.41528,0,0,0-6.1519-8.2847c-10.697-5.33411-34.17046-13.212-34.17046-13.212V69.03229l.65343-.49313a22.42566,22.42566,0,0,0,8.51484-14.25174l.13151-.826h.637a8.66287,8.66287,0,0,0,8.01764-5.39167A9.43369,9.43369,0,0,0,96.30471,43.5a8.67979,8.67979,0,0,0-.61644-3.21363A4.48227,4.48227,0,0,0,93.95,37.49191l-2.16572-1.315.53834-2.35062c3.91226-17.0544-9.29979-32.41574-27.04046-32.839C64.85067.979,64.42327.975,64,.98315,63.57669.975,63.14933.979,62.71783.98726c-17.74068.42329-30.95269,15.78463-27.04046,32.839l.53834,2.35062L34.05,37.49191a4.48232,4.48232,0,0,0-1.73833,2.79448A8.67976,8.67976,0,0,0,31.69529,43.5a9.4333,9.4333,0,0,0,1.17942,4.56973,8.66286,8.66286,0,0,0,8.0176,5.39167h.637l.13151.826a22.42566,22.42566,0,0,0,8.51484,14.25174l.65343.49313v7.75047s-23.4734,7.87794-34.17042,13.212a11.4151,11.4151,0,0,0-6.1519,8.2847c-1.83285,10.697-2.15747,28.7418-2.15747,28.7418H119.65073S119.32607,108.97654,117.49326,98.27951Z"></path>
-                            </svg>
-                            <p className={`mt-9 text-2xl font-bold transition-colors ${selectedRole === 'parent' ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>Parent</p>
-                        </div>
-                    </div>
-
-
-                    <div className="divider divider-horizontal before:bg-slate-300 after:bg-slate-300 dark:before:bg-slate-700 dark:after:bg-slate-700 text-slate-500 font-semibold mx-4">OR</div>
-
-                    {/* User Role - Staff */}
-                    <div
-                        onClick={() => handleRoleSelect('staff')}
-                        className={`card rounded-2xl shadow-xl h-60 w-60 flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${selectedRole === 'staff'
-                            ? 'bg-blue-50 dark:bg-blue-900/30 border-4 border-blue-600 dark:border-blue-500 scale-105'
-                            : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600'
-                            } `}
-                    >
-                        {/* Teacher SVG */}
-                        <div className="size-24 mb-10 ml-6 mt-4">
-                            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 157.9442 239.5764" enable-background="new 0 0 157.9442 239.5764">
-                                <g>
-                                    <path d="M11.5606,123.8221c-0.1254,0.7064-0.2025,1.4297-0.2025,2.1722v101.2188c0,6.8301,5.5371,12.3633,12.3633,12.3633
-                                c6.8281,0,12.3652-5.5332,12.3652-12.3633v-91.6886l4.6348,0.9384v90.7502c0,6.8301,5.5371,12.3633,12.3633,12.3633
-                                c6.8281,0,12.3652-5.5332,12.3652-12.3633v-97.4294l9.5809-47.3247c1.3326,5.1428,2.0583,12.7805,1.1222,23.8769
-                                c-0.2778,3.293,1.4976,6.418,4.4688,7.8652c1.1152,0.543,2.3125,0.8076,3.501,0.8076c1.979,0,3.9341-0.7334,5.4468-2.1387
-                                l14.3361-13.3175l-1.222,2.3901l3.1367,1.6038l5.6217-10.9948l9.1774-8.5253c3.1064-2.8857,3.3948-7.6603,0.7557-10.9015
-                                l36.5691-71.521L154.8074,0l-36.2588,70.914c-2.8612-1.3301-6.3635-0.8904-8.819,1.3896l-17.52,16.2754
-                                c-0.9585-10.4824-3.8149-18.5659-8.5469-24.1411c-4.096-4.8254-8.5237-6.4694-10.9666-7.0282
-                                c-0.1513-0.0402-0.3003-0.085-0.4558-0.1165l-37.8666-7.6661c-1.6093-0.3258-3.2007-0.122-4.6005,0.485
-                                c-0.1942,0.0619-0.3885,0.1238-0.5806,0.2015l-0.2324,0.0938c-4.8024,1.9325-10.0506,5.1369-15.3872,12.6583
-                                C9.1635,69.2805,4.6937,78.4393,0.3646,92.2932c-0.9023,2.8857-0.0996,6.0342,2.0752,8.1367
-                                c1.5166,1.4668,3.5195,2.249,5.5615,2.249c0.8848,0,1.7773-0.1465,2.6406-0.4482l43.4307-15.1924
-                                c4.1699-1.459,6.3682-6.0225,4.9102-10.1934c-1.459-4.1709-6.0215-6.3701-10.1934-4.9102l-27.3135,9.5547
-                                c2.5849-5.6083,4.9839-9.2093,7.0638-11.5721l2.1944,1.0046c-1.3653,1.4507-2.9178,3.5173-4.6127,6.506l21.9082-7.6641
-                                c1.1006-0.3848,2.2451-0.5801,3.4023-0.5801c4.3711,0,8.2773,2.7734,9.7217,6.9014c1.874,5.3613-0.9619,11.249-6.3213,13.124
-                                L15.704,102.8965l-4.0095,19.8046C11.6185,123.0767,11.5808,123.4504,11.5606,123.8221z"></path>
-                                    <ellipse transform="matrix(0.88 -0.4749 0.4749 0.88 -5.1974 31.0687)" cx="58.9014" cy="25.8225" rx="22.5" ry="22.5"></ellipse>
-                                </g>
-                            </svg>
-                        </div>
-                        <p className={`mt-6 ml-[-24px] text-2xl font-bold transition-colors ${selectedRole === 'staff' ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>Faculty</p>
-                    </div>
+            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl mx-auto w-full relative z-10">
+                <div className="mb-12">
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#2563EB] dark:text-[#3B82F6] mb-3">Welcome</p>
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        Choose Your Account Type
+                    </h1>
+                    <p className="mt-4 text-[#64748B] dark:text-[#94A3B8] text-lg max-w-md mx-auto">
+                        Select the role that best describes you to personalize your portal experience.
+                    </p>
                 </div>
 
-                <button
-                    onClick={handleClick}
-                    className="mt-20 self-center inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg px-12 py-4 rounded-xl transition-all shadow-xl shadow-blue-600/25 active:scale-[0.97] w-fit"
-                >
-                    Continue
-                </button>
+                {/* Role Selection Grid */}
+                <div className="grid md:grid-cols-2 gap-6 w-full max-w-2xl px-4">
+
+                    {/* Parent Card */}
+                    <div
+                        onClick={() => handleRoleSelect('parent')}
+                        className={`group relative p-8 rounded-3xl border text-left cursor-pointer transition-all duration-300 ${selectedRole === 'parent'
+                                ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-500 shadow-lg shadow-blue-500/10'
+                                : 'bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-700/50 shadow-sm'
+                            }`}
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${selectedRole === 'parent' ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500'
+                                }`}>
+                                <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedRole === 'parent' ? 'border-blue-500 bg-blue-500' : 'border-slate-300 dark:border-slate-700'
+                                }`}>
+                                {selectedRole === 'parent' && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                            </div>
+                        </div>
+                        <h3 className={`text-xl font-bold mb-2 transition-colors ${selectedRole === 'parent' ? 'text-blue-900 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>Parent/Guardian</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">View attendance records, receive notifications, and track academic progress.</p>
+                    </div>
+
+                    {/* Faculty Card */}
+                    <div
+                        onClick={() => handleRoleSelect('staff')}
+                        className={`group relative p-8 rounded-3xl border text-left cursor-pointer transition-all duration-300 ${selectedRole === 'staff'
+                                ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-500 shadow-lg shadow-blue-500/10'
+                                : 'bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-700/50 shadow-sm'
+                            }`}
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${selectedRole === 'staff' ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500'
+                                }`}>
+                                <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedRole === 'staff' ? 'border-blue-500 bg-blue-500' : 'border-slate-300 dark:border-slate-700'
+                                }`}>
+                                {selectedRole === 'staff' && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                            </div>
+                        </div>
+                        <h3 className={`text-xl font-bold mb-2 transition-colors ${selectedRole === 'staff' ? 'text-blue-900 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>Faculty/Teacher</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Manage sessions, generate QR codes, and access detailed analytics.</p>
+                    </div>
+
+                </div>
+
+                <div className="mt-14 h-16">
+                    <button
+                        onClick={handleClick}
+                        disabled={!selectedRole}
+                        className={`inline-flex items-center justify-center font-bold text-sm px-10 py-4 rounded-xl transition-all shadow-xl w-fit ${selectedRole
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/25 active:scale-[0.97] cursor-pointer'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 shadow-none cursor-not-allowed'
+                            }`}
+                    >
+                        Continue to Login
+                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     );
