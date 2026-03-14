@@ -62,8 +62,8 @@ const Navbar = () => {
     return (
         <header
             className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
-                    ? "bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm"
-                    : "bg-transparent"
+                ? "bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm"
+                : "bg-transparent"
                 }`}
         >
             <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
@@ -72,7 +72,7 @@ const Navbar = () => {
                         <img src={logo} alt="logo" className="h-5 w-5 object-contain" />
                     </div>
                     <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white">
-                        Scan In <span className="text-[#2563EB] dark:text-[#3B82F6]">Step In</span>
+                        Zono
                     </span>
                 </a>
 

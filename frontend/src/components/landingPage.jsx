@@ -78,7 +78,7 @@ const features = [
         icon: <ChartIcon />,
         label: "Analytics Dashboard",
         description:
-            "Visualize attendance patterns, session completion rates, and student behavior trends in a unified real-time dashboard.",
+            "Visualize attendance patterns, session completion rates, and student behavior trends in a unified demo dashboard.",
         accent: "emerald",
     },
 ];
@@ -183,9 +183,9 @@ const Landing = () => {
 
                             {/* Subheading */}
                             <p className="mt-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-lg">
-                                Track and analyze QR-based attendance with real-time insights,
-                                session tracking, and powerful reporting tools — built for
-                                educational institutions.
+                                Track attendance using QR scans and geo-verified sessions.
+                                Manage classes through a powerful web dashboard while
+                                students confirm attendance instantly through the mobile app.
                             </p>
 
                             {/* CTA Buttons */}
@@ -250,6 +250,81 @@ const Landing = () => {
                 </div>
             </section>
 
+            {/* ════════════════════════════════════════
+      PLATFORM (WEB + MOBILE)
+════════════════════════════════════════ */}
+            <section className="px-6 py-24 bg-white dark:bg-[#0A0F1E]">
+                <div className="max-w-7xl mx-auto">
+
+                    <div className="text-center max-w-2xl mx-auto mb-16">
+                        <p className="text-xs font-bold uppercase tracking-widest text-[#2563EB] dark:text-[#3B82F6] mb-3">
+                            Platform
+                        </p>
+                        <h2 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+                            One system. Two powerful interfaces.
+                        </h2>
+                        <p className="mt-4 text-[#64748B] dark:text-[#94A3B8] text-lg">
+                            Zono combines a demo analytics dashboard with a mobile
+                            attendance interface for seamless session management.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+
+                        {/* Web Platform */}
+                        <div className="group relative p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all duration-300">
+
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-6">
+                                <ChartIcon />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                                Web Analytics Platform
+                            </h3>
+
+                            <p className="mt-3 text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+                                Teachers manage attendance sessions and explore demo
+                                analytics through a powerful MERN dashboard. View reports,
+                                attendance trends, and student activity instantly.
+                            </p>
+
+                            <ul className="mt-6 space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                                <li>• Create attendance sessions</li>
+                                <li>• View attendance analytics</li>
+                                <li>• Generate reports</li>
+                                <li>• Monitor session activity</li>
+                            </ul>
+                        </div>
+
+                        {/* Mobile Platform */}
+                        <div className="group relative p-8 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all duration-300">
+
+                            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center mb-6">
+                                <QrIcon />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                                Mobile Attendance App
+                            </h3>
+
+                            <p className="mt-3 text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+                                Students receive attendance notifications and verify presence
+                                directly through the React Native mobile app. QR scanning and
+                                geo-verification ensure accurate attendance capture.
+                            </p>
+
+                            <ul className="mt-6 space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                                <li>• Receive attendance alerts</li>
+                                <li>• Scan QR codes</li>
+                                <li>• Geo-verified attendance</li>
+                                <li>• Instant attendance confirmation</li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
 
 
 
@@ -343,7 +418,7 @@ const Landing = () => {
                         <div className="max-w-xl">
                             <p className="text-xs font-bold uppercase tracking-widest text-[#2563EB] dark:text-[#3B82F6] mb-3">Analytics</p>
                             <h2 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-                                Real-time insights, every session.
+                                Demo analytics, every session.
                             </h2>
                             <p className="mt-4 text-[#64748B] dark:text-[#94A3B8] text-lg">
                                 Monitor attendance health across all subjects and students from one unified view.
@@ -416,7 +491,7 @@ const Landing = () => {
                     </div>
 
                     {/* Recent sessions table */}
-                    <div className="mt-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    {/* <div className="mt-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                             <p className="font-bold text-[15px] text-slate-900 dark:text-white">Recent Sessions</p>
                         </div>
@@ -454,7 +529,7 @@ const Landing = () => {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </div> */}
 
                 </div>
             </section>
@@ -519,8 +594,9 @@ const Landing = () => {
                                 </span>
                             </a>
                             <p className="text-sm leading-relaxed text-slate-500 max-w-xs">
-                                A MERN-based analytics platform for QR-powered attendance tracking in educational institutions.
-                            </p>
+                                Zono is a smart attendance platform combining a MERN analytics
+                                dashboard with a React Native mobile app for secure QR-based
+                                attendance verification.</p>
                         </div>
 
                         {/* Product */}
@@ -550,7 +626,7 @@ const Landing = () => {
                     </div>
 
                     <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
-                        <p>© {new Date().getFullYear()} Scan In Step In. All rights reserved.</p>
+                        <p>© {new Date().getFullYear()} Zono. All rights reserved.</p>
                         <p>Built with MERN Stack · MongoDB · Express · React · Node.js</p>
                     </div>
 

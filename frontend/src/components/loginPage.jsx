@@ -55,7 +55,7 @@ const LoginPage = () => {
                             </div>
                         </div>
                         <p className="text-slate-200 leading-relaxed font-medium">
-                            "Scan In Step In completely transformed how our faculty handles daily attendance tracking. It's effortless and incredibly reliable."
+                            "Zono completely transformed how our faculty handles daily attendance tracking. It's effortless and incredibly reliable."
                         </p>
                     </div>
                 </div>
