@@ -6,6 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const staff = require("./model/staff");
+const parent = require("./model/parent");
 const studentController = require('./controllers/studentController');
 const router = require('./routes/router');
 const attendStudentModel = require("./model/attendStudent");
@@ -45,9 +46,16 @@ app.use(session({
 
 // ------------------ AUTH ROUTES ------------------
 app.post('/register', (req, res) => {
-    staff.create(req.body)
-        .then(staffs => res.json(staffs))
-        .catch(err => res.status(500).json(err));
+    const { role, ...data } = req.body;
+    if (role === 'parent') {
+        parent.create(data)
+            .then(user => res.json(user))
+            .catch(err => res.status(500).json(err));
+    } else {
+        staff.create(data)
+            .then(user => res.json(user))
+            .catch(err => res.status(500).json(err));
+    }
 });
 
 app.post('/login', (req, res) => {
@@ -59,10 +67,27 @@ app.post('/login', (req, res) => {
             if (user.password !== password)
                 return res.json({ message: "Failed", error: "Invalid password" });
 
-            req.session.user = { email: user.email, name: user.name };
-            res.json({ message: "Success", user: req.session.user });
+            req.session.email = email;
+            req.session.role = 'staff';
+            res.json({ message: "Success" });
         })
-        .catch(err => res.status(500).json(err));
+        .catch(err => res.json({ message: "Error", error: err }));
+});
+
+app.post('/loginParent', (req, res) => {
+    const { email, password } = req.body;
+
+    parent.findOne({ email })
+        .then(user => {
+            if (!user) return res.json({ message: "No record found" });
+            if (user.password !== password)
+                return res.json({ message: "Failed", error: "Invalid password" });
+
+            req.session.email = email;
+            req.session.role = 'parent';
+            res.json({ message: "Success" });
+        })
+        .catch(err => res.json({ message: "Error", error: err }));
 });
 
 // Check active session

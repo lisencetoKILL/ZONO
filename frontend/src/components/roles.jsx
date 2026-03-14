@@ -12,7 +12,7 @@ const Roles = () => {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate('/login', { state: { role: selectedRole, hideRoleSelection: true } });
+        navigate('/register', { state: { role: selectedRole } });
     };
 
     return (
@@ -104,7 +104,7 @@ const Roles = () => {
                                 : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 shadow-none cursor-not-allowed'
                             }`}
                     >
-                        Continue to Login
+                        Continue to Register
                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
                         </svg>

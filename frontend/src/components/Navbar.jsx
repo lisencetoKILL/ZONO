@@ -103,12 +103,7 @@ const Navbar = () => {
                         Login <ArrowRightIcon />
                     </a>
 
-                    <a
-                        href="/roles"
-                        className="hidden md:inline-flex bg-[#2563EB] dark:bg-[#3B82F6] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors shadow-md shadow-blue-500/20 active:scale-95"
-                    >
-                        Get Started
-                    </a>
+
 
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
