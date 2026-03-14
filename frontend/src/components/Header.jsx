@@ -1,10 +1,18 @@
-import React from 'react';
-import { LayoutDashboard, FileText, ClipboardCheck } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon } from 'lucide-react';
 import { IoIosNotifications } from 'react-icons/io';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Header = ({ children }) => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const [sessionUser, setSessionUser] = useState(null);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [dark, setDark] = useState(() => {
+        const saved = localStorage.getItem('sisi-dark');
+        if (saved !== null) return saved === 'true';
+        return document.documentElement.classList.contains('dark');
+    });
 
     const routeToStateMap = {
         '/home': 'Dashboard',
@@ -13,6 +21,59 @@ const Header = ({ children }) => {
     };
 
     const active = routeToStateMap[location.pathname] || '';
+
+    useEffect(() => {
+        if (dark) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('sisi-dark', 'true');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('sisi-dark', 'false');
+        }
+    }, [dark]);
+
+    useEffect(() => {
+        const fetchSession = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/auth/session', {
+                    credentials: 'include',
+                });
+                const data = await response.json();
+                if (data?.loggedIn) {
+                    setSessionUser(data.user);
+                } else {
+                    setSessionUser(null);
+                }
+            } catch (error) {
+                setSessionUser(null);
+            }
+        };
+
+        fetchSession();
+    }, [location.pathname]);
+
+    const initials = (sessionUser?.name || 'Faculty')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join('') || 'F';
+
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            await fetch('http://localhost:3001/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+            setSessionUser(null);
+            navigate('/login');
+        } catch (error) {
+            navigate('/login');
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#020617] text-[#0F172A] dark:text-[#E2E8F0] flex transition-colors duration-300 font-sans">
@@ -66,8 +127,8 @@ const Header = ({ children }) => {
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">F</div>
                             <div className="overflow-hidden">
-                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">Faculty Member</p>
-                                <p className="text-[10px] text-slate-500 truncate italic">Faculty Portal</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{sessionUser?.name || 'Faculty Member'}</p>
+                                <p className="text-[10px] text-slate-500 truncate italic">{sessionUser?.email || 'Faculty Portal'}</p>
                             </div>
                         </div>
                     </div>
@@ -77,23 +138,37 @@ const Header = ({ children }) => {
             {/* Main Wrapper */}
             <div className="flex-1 lg:pl-72 flex flex-col min-w-0">
                 {/* Header/Topnav */}
-                <header className="h-20 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/40 sticky top-0 z-40 px-6 sm:px-8 flex items-center justify-between">
+                <header className="h-20 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/40 sticky top-0 z-40 px-6 sm:px-8 flex items-center justify-between gap-4">
                     <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1 hidden sm:block">Faculty Portal</p>
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{active}</h2>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Zono Attendance Platform</p>
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <button
+                            className="w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors flex items-center justify-center"
+                            onClick={() => setDark((prev) => !prev)}
+                            type="button"
+                            aria-label="Toggle dark mode"
+                        >
+                            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+
                         <button className="relative p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors group">
                             <IoIosNotifications size={22} />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white dark:border-[#020617] rounded-full"></span>
                         </button>
                         <div className="h-8 w-[1px] bg-slate-200 dark:border-slate-800 mx-1"></div>
-                        <button className="flex items-center gap-3 pl-1 pr-4 py-1.5 rounded-full hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-800 group">
-                            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm transition-transform group-hover:scale-105">
-                                <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="Avatar" className="w-full h-full object-cover" />
-                            </div>
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Logout</span>
+                     
+
+                        <button
+                            className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors text-sm font-semibold disabled:opacity-60"
+                            onClick={handleLogout}
+                            disabled={isLoggingOut}
+                            type="button"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            {isLoggingOut ? 'Logging out...' : 'Logout'}
                         </button>
                     </div>
                 </header>

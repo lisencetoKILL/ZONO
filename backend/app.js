@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const staff = require("./model/staff");
 const parent = require("./model/parent");
+const SessionLog = require('./model/sessionLog');
 const studentController = require('./controllers/studentController');
 const router = require('./routes/router');
 const attendStudentModel = require("./model/attendStudent");
@@ -62,14 +63,32 @@ app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
     staff.findOne({ email })
-        .then(user => {
+        .then(async user => {
             if (!user) return res.json({ message: "No record found" });
             if (user.password !== password)
                 return res.json({ message: "Failed", error: "Invalid password" });
 
-            req.session.email = email;
-            req.session.role = 'staff';
-            res.json({ message: "Success" });
+            const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
+
+            req.session.user = {
+                id: String(user._id),
+                email: user.email,
+                role: 'staff',
+                name: displayName,
+                loginAt: new Date().toISOString(),
+            };
+
+            await SessionLog.create({
+                sessionId: req.sessionID,
+                userId: user._id,
+                email: user.email,
+                role: 'staff',
+                event: 'login',
+                ipAddress: req.ip,
+                userAgent: req.headers['user-agent'] || '',
+            });
+
+            res.json({ message: "Success", user: req.session.user });
         })
         .catch(err => res.json({ message: "Error", error: err }));
 });
@@ -78,16 +97,70 @@ app.post('/loginParent', (req, res) => {
     const { email, password } = req.body;
 
     parent.findOne({ email })
-        .then(user => {
+        .then(async user => {
             if (!user) return res.json({ message: "No record found" });
             if (user.password !== password)
                 return res.json({ message: "Failed", error: "Invalid password" });
 
-            req.session.email = email;
-            req.session.role = 'parent';
-            res.json({ message: "Success" });
+            req.session.user = {
+                id: String(user._id),
+                email: user.email,
+                role: 'parent',
+                name: user.name || user.email,
+                loginAt: new Date().toISOString(),
+            };
+
+            await SessionLog.create({
+                sessionId: req.sessionID,
+                userId: user._id,
+                email: user.email,
+                role: 'parent',
+                event: 'login',
+                ipAddress: req.ip,
+                userAgent: req.headers['user-agent'] || '',
+            });
+
+            res.json({ message: "Success", user: req.session.user });
         })
         .catch(err => res.json({ message: "Error", error: err }));
+});
+
+app.get('/auth/session', (req, res) => {
+    res.json({
+        loggedIn: !!req.session.user,
+        user: req.session.user || null,
+    });
+});
+
+app.post('/auth/logout', async (req, res) => {
+    const currentUser = req.session.user;
+
+    if (!currentUser) {
+        return res.status(200).json({ message: 'Already logged out' });
+    }
+
+    try {
+        await SessionLog.create({
+            sessionId: req.sessionID,
+            userId: currentUser.id,
+            email: currentUser.email,
+            role: currentUser.role,
+            event: 'logout',
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'] || '',
+        });
+
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Logout failed' });
+            }
+
+            res.clearCookie('connect.sid');
+            return res.status(200).json({ message: 'Logged out successfully' });
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Logout failed', error: error.message });
+    }
 });
 
 // Check active session
