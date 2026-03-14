@@ -3,6 +3,9 @@ import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon } from 'lu
 import { IoIosNotifications } from 'react-icons/io';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
+const SESSION_USER_CACHE_KEY = 'zono-session-user-cache';
+const SESSION_USER_FETCHED_KEY = 'zono-session-user-fetched';
+
 const Header = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -33,24 +36,45 @@ const Header = ({ children }) => {
     }, [dark]);
 
     useEffect(() => {
+        const fetchedBefore = sessionStorage.getItem(SESSION_USER_FETCHED_KEY) === 'true';
+        const cachedUser = sessionStorage.getItem(SESSION_USER_CACHE_KEY);
+
+        if (fetchedBefore) {
+            if (cachedUser) {
+                try {
+                    setSessionUser(JSON.parse(cachedUser));
+                } catch {
+                    setSessionUser(null);
+                }
+            } else {
+                setSessionUser(null);
+            }
+            return;
+        }
+
         const fetchSession = async () => {
             try {
                 const response = await fetch('http://localhost:3001/auth/session', {
                     credentials: 'include',
                 });
                 const data = await response.json();
-                if (data?.loggedIn) {
+                if (data?.loggedIn && data?.user) {
                     setSessionUser(data.user);
+                    sessionStorage.setItem(SESSION_USER_CACHE_KEY, JSON.stringify(data.user));
                 } else {
                     setSessionUser(null);
+                    sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
                 }
             } catch (error) {
                 setSessionUser(null);
+                sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+            } finally {
+                sessionStorage.setItem(SESSION_USER_FETCHED_KEY, 'true');
             }
         };
 
         fetchSession();
-    }, [location.pathname]);
+    }, []);
 
     const initials = (sessionUser?.name || 'Faculty')
         .split(' ')
@@ -67,8 +91,12 @@ const Header = ({ children }) => {
                 credentials: 'include',
             });
             setSessionUser(null);
+            sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+            sessionStorage.removeItem(SESSION_USER_FETCHED_KEY);
             navigate('/login');
         } catch (error) {
+            sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+            sessionStorage.removeItem(SESSION_USER_FETCHED_KEY);
             navigate('/login');
         } finally {
             setIsLoggingOut(false);
