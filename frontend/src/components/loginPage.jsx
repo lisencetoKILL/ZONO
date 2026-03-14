@@ -1,26 +1,51 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const [email, setEmail] = useState(''); // Initial value as an empty string
+    // Extract role and hide selection config from route state
+    const navState = location.state || {};
+    const defaultRole = navState.role || 'staff';
+    const hideRoleSelection = navState.hideRoleSelection || false;
+
+    const [role, setRole] = useState(defaultRole); // 'staff' or 'parent'
+    const [identifier, setIdentifier] = useState(''); // email for staff, ien for parent
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Include credentials to send cookies
-        axios.post('http://localhost:3001/login', { email, password }, { withCredentials: true })
-            .then(result => {
-                console.log(result.data);
+        setError('');
+        setIsLoading(true);
+
+        try {
+            if (role === 'staff') {
+                const result = await axios.post('http://localhost:3001/login', { email: identifier, password }, { withCredentials: true });
                 if (result.data.message === "Success") {
-                    // Redirect to homepage
                     navigate('/home');
+                } else {
+                    setError(result.data.error || result.data.message || 'Login failed');
                 }
-            })
-            .catch(err => console.log(err));
+            } else {
+                const result = await axios.post('http://localhost:3001/api/loginStudent', { ien: identifier, password }, { withCredentials: true });
+                if (result.data.message === "Login successful") {
+                    // Assuming parent goes to home as well, or another dashboard
+                    navigate('/home');
+                } else {
+                    setError(result.data.message || 'Login failed');
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.message || err.response?.data?.error || 'An error occurred during login');
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -72,28 +97,59 @@ const LoginPage = () => {
                             Welcome Back
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 text-lg">
-                            Please enter your details to sign in.
+                            Please select your role and sign in.
                         </p>
                     </div>
 
+                    {/* Role Selection Tabs */}
+                    {!hideRoleSelection && (
+                        <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-8 shadow-inner">
+                            <button
+                                onClick={() => { setRole('staff'); setIdentifier(''); setError(''); }}
+                                className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${role === 'staff' ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-md transform scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                Faculty / Staff
+                            </button>
+                            <button
+                                onClick={() => { setRole('parent'); setIdentifier(''); setError(''); }}
+                                className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${role === 'parent' ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-md transform scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                Parent
+                            </button>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && (
+                            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-2xl text-sm font-medium text-center">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="space-y-1.5">
-                            <label className="block text-slate-700 dark:text-slate-300 text-sm font-bold ml-1" htmlFor="email">
-                                Email Address
+                            <label className="block text-slate-700 dark:text-slate-300 text-sm font-bold ml-1" htmlFor="identifier">
+                                {role === 'staff' ? 'Email Address' : 'IEN Number'}
                             </label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                    </svg>
+                                    {role === 'staff' ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                        </svg>
+                                    )}
                                 </span>
                                 <input
                                     className="w-full pl-11 pr-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
-                                    id="email"
-                                    type="email"
-                                    placeholder="name@example.com"
+                                    id="identifier"
+                                    type={role === 'staff' ? 'email' : 'text'}
+                                    placeholder={role === 'staff' ? 'name@example.com' : 'Enter your IEN'}
                                     required
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -114,6 +170,7 @@ const LoginPage = () => {
                                     type="password"
                                     placeholder="••••••••"
                                     required
+                                    value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
@@ -136,8 +193,19 @@ const LoginPage = () => {
                         </div>
 
                         <div className="pt-4">
-                            <button className="w-full inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold h-14 rounded-2xl transition-all shadow-[0_8px_20px_-6px_rgba(37,99,235,0.4)] hover:shadow-[0_12px_24px_-8px_rgba(37,99,235,0.5)] active:scale-[0.98]" type="submit">
-                                Sign In
+                            <button
+                                className="w-full inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold h-14 rounded-2xl transition-all shadow-[0_8px_20px_-6px_rgba(37,99,235,0.4)] hover:shadow-[0_12px_24px_-8px_rgba(37,99,235,0.5)] active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none"
+                                type="submit"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    'Sign In'
+                                )}
                             </button>
                         </div>
                     </form>

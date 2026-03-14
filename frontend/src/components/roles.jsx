@@ -12,7 +12,7 @@ const Roles = () => {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate('/login');
+        navigate('/login', { state: { role: selectedRole, hideRoleSelection: true } });
     };
 
     return (
