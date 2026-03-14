@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import loginImg from '../loginImg.png';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
@@ -35,7 +34,7 @@ const LoginPage = () => {
                 <div className="absolute inset-0 z-10 bg-gradient-to-r from-blue-900/60 via-transparent to-transparent mix-blend-multiply"></div>
 
                 <img
-                    src={loginImg}
+                    src="/loginImg.png"
                     alt="Login Illustration"
                     className="object-cover h-full w-full opacity-60 dark:opacity-40 transition-opacity duration-700 hover:scale-105"
                 />

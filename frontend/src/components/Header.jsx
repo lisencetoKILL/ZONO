@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { FaTachometerAlt, FaChartBar } from 'react-icons/fa'; // Icons
 import { IoIosNotifications } from 'react-icons/io';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../components/logo.png';
 
 const Header = ({ children }) => {
     const location = useLocation(); // Get the current route
@@ -31,7 +30,7 @@ const Header = ({ children }) => {
                         {/* Logo */}
                         <li className="mb-6 flex items-center justify-center flex-col">
                             <img
-                                src={logo}
+                                src="/logo.png"
                                 alt="Logo"
                                 className="w-20 h-20 mb-2"
                             />

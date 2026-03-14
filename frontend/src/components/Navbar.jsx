@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import logo from "../components/logo.png";
 
 const SunIcon = () => (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -67,11 +66,11 @@ const Navbar = () => {
                 }`}
         >
             <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-                <a href="/" className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 bg-[#2563EB] dark:bg-[#3B82F6] rounded-lg flex items-center justify-center shadow-md shadow-blue-500/25">
-                        <img src={logo} alt="logo" className="h-5 w-5 object-contain" />
+                <a href="/" className="flex items-center gap-3 group">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center">
+                        <img src="/logo.png" alt="logo" className="h-full w-full object-contain" />
                     </div>
-                    <span className="font-bold text-[15px] tracking-tight text-slate-900 dark:text-white">
+                    <span className="font-bold text-[18px] tracking-tight text-slate-900 dark:text-white">
                         Zono
                     </span>
                 </a>

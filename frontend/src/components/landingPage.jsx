@@ -1,6 +1,4 @@
 import React from "react";
-import logo from "../components/logo.png";
-import heroIllustration from "../components/landing.jpg";
 import Navbar from "./Navbar";
 
 // ─── HERO SECTION — drop-in replacement ───────────────────────────────────────
@@ -236,7 +234,7 @@ const Landing = () => {
                                 style={{ animation: "heroFloat 5s ease-in-out infinite" }}
                             >
                                 <img
-                                    src={heroIllustration}
+                                    src="/landing.jpg"
                                     alt="QR Attendance Verification Illustration"
                                     className="w-full h-auto object-cover rounded-3xl transition-all duration-700 hover:scale-[1.02]"
                                     style={{
@@ -578,58 +576,27 @@ const Landing = () => {
             {/* ════════════════════════════════════════
           FOOTER
       ════════════════════════════════════════ */}
-            <footer className="bg-slate-950 text-slate-400 py-16 px-6">
-                <div className="max-w-7xl mx-auto">
+            <footer className="relative bg-[#F8FAFC] dark:bg-[#020617] pt-32 overflow-hidden border-t border-slate-200 dark:border-slate-800/40 text-center">
+                <div className="max-w-3xl mx-auto px-6 relative z-10 pb-6">
+                    <p className="text-lg md:text-xl font-medium text-slate-600 dark:text-slate-400">
+                        A modern attendance platform connecting powerful analytics with seamless mobile verification.
+                    </p>
+                </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+                {/* HUGE ZONO BACKGROUND TEXT */}
+                <div className="w-full flex justify-center items-end select-none pointer-events-none mt-12 overflow-hidden">
+                    <span
+                        className="text-[24vw] font-black leading-[0.75] tracking-tighter text-slate-200 dark:text-slate-800/40"
+                    >
+                        ZONO
+                    </span>
+                </div>
 
-                        {/* Brand */}
-                        <div className="lg:col-span-2">
-                            <a href="/" className="flex items-center gap-2.5 mb-4">
-                                <div className="w-8 h-8 bg-[#3B82F6] rounded-lg flex items-center justify-center">
-                                    <img src={logo} alt="logo" className="h-5 w-5 object-contain" />
-                                </div>
-                                <span className="font-bold text-sm text-white">
-                                    Scan In <span className="text-[#3B82F6]">Step In</span>
-                                </span>
-                            </a>
-                            <p className="text-sm leading-relaxed text-slate-500 max-w-xs">
-                                Zono is a smart attendance platform combining a MERN analytics
-                                dashboard with a React Native mobile app for secure QR-based
-                                attendance verification.</p>
-                        </div>
-
-                        {/* Product */}
-                        <div>
-                            <p className="text-white font-semibold text-sm mb-5 tracking-tight">Product</p>
-                            <ul className="flex flex-col gap-3 text-sm">
-                                {["Features", "Analytics", "Documentation"].map((l) => (
-                                    <li key={l}>
-                                        <a href="#" className="hover:text-white transition-colors duration-200">{l}</a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Support */}
-                        <div>
-                            <p className="text-white font-semibold text-sm mb-5 tracking-tight">Support</p>
-                            <ul className="flex flex-col gap-3 text-sm">
-                                {["Contact", "Privacy Policy"].map((l) => (
-                                    <li key={l}>
-                                        <a href="#" className="hover:text-white transition-colors duration-200">{l}</a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                    </div>
-
-                    <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-6 py-8 border-t border-slate-200 dark:border-slate-800/60 text-sm text-slate-500 font-medium">
                         <p>© {new Date().getFullYear()} Zono. All rights reserved.</p>
-                        <p>Built with MERN Stack · MongoDB · Express · React · Node.js</p>
+                        <p className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors cursor-pointer">Terms and Conditions | Privacy Policy</p>
                     </div>
-
                 </div>
             </footer>
 
