@@ -11,7 +11,9 @@ const LogReportPage = () => {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/students'); // Replace with your backend URL
+                const response = await fetch('http://localhost:3001/api/students', {
+                    credentials: 'include',
+                });
                 const data = await response.json();
                 setStudents(data);
             } catch (error) {
@@ -43,12 +45,17 @@ const LogReportPage = () => {
     return (
         <Header>
             <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 shadow-sm">
-                    <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">Reports</p>
-                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Log Report</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm sm:text-base">
+                <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 shadow-sm">
+                    <div className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full bg-blue-500/10 dark:bg-blue-500/20 blur-3xl"></div>
+                    <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-blue-500/10 dark:ring-blue-400/20"></div>
+
+                    <div className="relative z-10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">Reports</p>
+                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Log Report</h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm sm:text-base">
                         View student logs and open detailed reports from one place.
-                    </p>
+                        </p>
+                    </div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden">

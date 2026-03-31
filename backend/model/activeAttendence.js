@@ -2,9 +2,12 @@ const mongoose = require('mongoose');
 
 const activeAttendanceSchema = new mongoose.Schema({
     department: String,
+    year: String,
     date: String,
     classNumber: String,
     classroomId: String, // or coordinates if needed
+    teacherId: { type: String, default: '' },
+    institutionId: { type: String, default: '' },
     createdAt: {
         type: Date,
         default: Date.now,

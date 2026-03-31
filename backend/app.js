@@ -11,6 +11,10 @@ const SessionLog = require('./model/sessionLog');
 const studentController = require('./controllers/studentController');
 const router = require('./routes/router');
 const attendStudentModel = require("./model/attendStudent");
+const adminController = require('./controllers/adminController');
+const parentAuthController = require('./controllers/parentAuthController');
+const { hashPassword, verifyPassword } = require('./utils/authUtils');
+const { requireUserAuth, requireRoles } = require('./middleware/authMiddleware');
 
 // ------------------ DATABASE CONNECTION ------------------
 mongoose.connect(process.env.MONGO_URI)
@@ -46,16 +50,35 @@ app.use(session({
 }));
 
 // ------------------ AUTH ROUTES ------------------
-app.post('/register', (req, res) => {
-    const { role, ...data } = req.body;
-    if (role === 'parent') {
-        parent.create(data)
-            .then(user => res.json(user))
-            .catch(err => res.status(500).json(err));
-    } else {
-        staff.create(data)
-            .then(user => res.json(user))
-            .catch(err => res.status(500).json(err));
+app.post('/register', async (req, res) => {
+    try {
+        const { role, email, password, ...data } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        const hashedPassword = await hashPassword(password);
+
+        if (role === 'parent') {
+            const existingParent = await parent.findOne({ email });
+            if (existingParent) {
+                return res.status(409).json({ message: 'Parent already exists with this email' });
+            }
+
+            const user = await parent.create({ ...data, email, password: hashedPassword });
+            return res.json(user);
+        }
+
+        const existingStaff = await staff.findOne({ email });
+        if (existingStaff) {
+            return res.status(409).json({ message: 'Staff already exists with this email' });
+        }
+
+        const user = await staff.create({ ...data, email, password: hashedPassword });
+        return res.json(user);
+    } catch (err) {
+        return res.status(500).json(err);
     }
 });
 
@@ -65,7 +88,8 @@ app.post('/login', (req, res) => {
     staff.findOne({ email })
         .then(async user => {
             if (!user) return res.json({ message: "No record found" });
-            if (user.password !== password)
+            const isValidPassword = await verifyPassword(password, user.password);
+            if (!isValidPassword)
                 return res.json({ message: "Failed", error: "Invalid password" });
 
             const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
@@ -75,6 +99,7 @@ app.post('/login', (req, res) => {
                 email: user.email,
                 role: 'staff',
                 name: displayName,
+                institutionId: user.institutionId || '',
                 loginAt: new Date().toISOString(),
             };
 
@@ -93,36 +118,36 @@ app.post('/login', (req, res) => {
         .catch(err => res.json({ message: "Error", error: err }));
 });
 
-app.post('/loginParent', (req, res) => {
-    const { email, password } = req.body;
+app.post('/admin/register', adminController.registerAdmin);
 
-    parent.findOne({ email })
-        .then(async user => {
-            if (!user) return res.json({ message: "No record found" });
-            if (user.password !== password)
-                return res.json({ message: "Failed", error: "Invalid password" });
+app.post('/admin/login', async (req, res) => {
+    const result = await adminController.loginAdmin(req, res);
+    if (res.headersSent) return result;
 
-            req.session.user = {
-                id: String(user._id),
-                email: user.email,
-                role: 'parent',
-                name: user.name || user.email,
-                loginAt: new Date().toISOString(),
-            };
-
+    if (req.session?.user?.role === 'admin') {
+        try {
             await SessionLog.create({
                 sessionId: req.sessionID,
-                userId: user._id,
-                email: user.email,
-                role: 'parent',
+                userId: req.session.user.id,
+                email: req.session.user.email,
+                role: 'admin',
                 event: 'login',
                 ipAddress: req.ip,
                 userAgent: req.headers['user-agent'] || '',
             });
+        } catch (error) {
+            // Continue even if session logging fails.
+        }
+    }
+});
 
-            res.json({ message: "Success", user: req.session.user });
-        })
-        .catch(err => res.json({ message: "Error", error: err }));
+app.post('/parent/request-otp', parentAuthController.requestParentOtp);
+app.post('/parent/verify-otp', parentAuthController.verifyParentOtp);
+
+app.post('/loginParent', (req, res) => {
+    return res.status(410).json({
+        message: 'Parent password login is no longer supported. Please use OTP login.',
+    });
 });
 
 app.get('/auth/session', (req, res) => {
@@ -172,7 +197,7 @@ app.get('/home', (req, res) => {
 });
 
 // ------------------ ATTENDANCE DATA ------------------
-app.get('/api/attendStudent', async (req, res) => {
+app.get('/api/attendStudent', requireUserAuth, requireRoles('staff', 'admin'), async (req, res) => {
     try {
         const filter = { ...req.query };
         const students = await attendStudentModel.find(filter);

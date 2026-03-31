@@ -201,6 +201,12 @@ const RegisterPage = () => {
                                     Log in
                                 </a>
                             </p>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-3">
+                                Registering as institution admin?{' '}
+                                <a href="/adminRegister" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+                                    Create admin account
+                                </a>
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -50,7 +50,7 @@ exports.markAttendance = async (req, res) => {
 
         const alreadyMarked = await Attendance.findOne({
             studentId,
-            classNumber: matchedClassroom.classNumber,
+            classNumber: matchedClassroom.name,
             department: student.department,
             year: student.year,
         });
@@ -63,8 +63,10 @@ exports.markAttendance = async (req, res) => {
             studentId,
             department: student.department,
             year: student.year,
-            classNumber: matchedClassroom.classNumber,
+            classNumber: matchedClassroom.name,
             classroomId: matchedClassroom._id,
+            teacherId: activeSession.teacherId || '',
+            institutionId: activeSession.institutionId || '',
             rollNumber, // storing the selected roll number too
         });
 

@@ -14,21 +14,31 @@ const Home = () => {
   const [counter, setCounter] = useState(0);
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
 
     const fetchStudents = async () => {
       try {
+        setFetchError("");
 
-        const response = await fetch("http://localhost:3001/api/students");
+        const response = await fetch("http://localhost:3001/api/students", {
+          credentials: 'include',
+        });
         const data = await response.json();
 
-        setStudents(data);
+        if (!response.ok) {
+          throw new Error(data?.message || data?.error || "Failed to fetch students");
+        }
+
+        const safeStudents = Array.isArray(data) ? data : [];
+
+        setStudents(safeStudents);
 
         const today = new Date().toISOString().split("T")[0];
 
-        const todaysEntries = data.filter(
+        const todaysEntries = safeStudents.filter(
           (s) =>
             new Date(s.createdAt).toISOString().split("T")[0] === today
         );
@@ -38,6 +48,9 @@ const Home = () => {
       } catch (error) {
 
         console.error("Error fetching students:", error);
+        setStudents([]);
+        setCounter(0);
+        setFetchError(error.message || "Unable to load attendance right now");
 
       } finally {
 
@@ -66,7 +79,9 @@ const Home = () => {
   };
 
 
-  const filteredStudents = students.filter((student) => {
+  const safeStudentsForFilter = Array.isArray(students) ? students : [];
+
+  const filteredStudents = safeStudentsForFilter.filter((student) => {
 
     const query = searchTerm.trim().toLowerCase();
 
@@ -130,9 +145,12 @@ const Home = () => {
 
         {/* Dashboard Header */}
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 shadow-sm">
+        <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 shadow-sm">
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full bg-blue-500/10 dark:bg-blue-500/20 blur-3xl"></div>
+          <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-blue-500/10 dark:ring-blue-400/20"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
             <div>
 
@@ -150,7 +168,7 @@ const Home = () => {
 
             </div>
 
-            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold">
+            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold border border-blue-100 dark:border-blue-500/30 text-slate-700 dark:text-slate-200">
               {todayLabel}
             </div>
 
@@ -236,6 +254,14 @@ const Home = () => {
             </div>
 
           </div>
+
+          {fetchError && (
+            <div className="px-6 pb-2">
+              <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">
+                {fetchError}
+              </div>
+            </div>
+          )}
 
 
           {/* Table */}

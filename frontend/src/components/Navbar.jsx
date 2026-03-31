@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 
 const SunIcon = () => (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -32,9 +33,19 @@ const ArrowRightIcon = () => (
 );
 
 const Navbar = () => {
+    const location = useLocation();
     const [dark, setDark] = useState(() => localStorage.getItem("sisi-dark") === "true");
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+
+    const pathname = location.pathname;
+    const isLandingPage = pathname === '/';
+    const isRolesPage = pathname === '/roles';
+    const isLoginPage = pathname === '/login';
+    const isAdminLoginPage = pathname === '/adminLogin';
+    const hideNavLinks = isRolesPage || isLoginPage || isAdminLoginPage;
+    const isUserAuthPage = ['/register'].includes(pathname);
+    const isAdminAuthPage = ['/adminRegister'].includes(pathname);
 
     useEffect(() => {
         if (dark) {
@@ -52,11 +63,26 @@ const Navbar = () => {
         return () => window.removeEventListener("scroll", handler);
     }, []);
 
-    const navLinks = [
-        { name: "Features", href: "/#features" },
-        { name: "How It Works", href: "/#how-it-works" },
-        { name: "Analytics", href: "/#analytics" },
-    ];
+    const navLinks = hideNavLinks
+        ? []
+        : isLandingPage
+        ? [
+            { name: "Features", href: "/#features" },
+            { name: "How It Works", href: "/#how-it-works" },
+            { name: "Analytics", href: "/#analytics" },
+        ]
+        : isUserAuthPage
+            ? [
+                { name: "Home", href: "/" },
+                { name: "Role Selection", href: "/roles" },
+            ]
+            : isAdminAuthPage
+                ? [
+                    { name: "Home", href: "/" },
+                    { name: "Admin Login", href: "/adminLogin" },
+                    { name: "Admin Register", href: "/adminRegister" },
+                ]
+                : [];
 
     return (
         <header
@@ -88,33 +114,84 @@ const Navbar = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setDark(!dark)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        aria-label="Toggle dark mode"
-                    >
-                        {dark ? <SunIcon /> : <MoonIcon />}
-                    </button>
+                    {!isRolesPage && (
+                        <button
+                            onClick={() => setDark(!dark)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            aria-label="Toggle dark mode"
+                        >
+                            {dark ? <SunIcon /> : <MoonIcon />}
+                        </button>
+                    )}
 
-                    <a
-                        href="/login"
-                        className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
-                    >
-                        Login <ArrowRightIcon />
-                    </a>
+                    {isRolesPage && (
+                        <a
+                            href="/login"
+                            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            Login <ArrowRightIcon />
+                        </a>
+                    )}
+
+                    {isLoginPage && (
+                        <a
+                            href="/adminLogin"
+                            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            Admin Login <ArrowRightIcon />
+                        </a>
+                    )}
+
+                    {isAdminLoginPage && (
+                        <a
+                            href="/login"
+                            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            Staff Login <ArrowRightIcon />
+                        </a>
+                    )}
+
+                    {isLandingPage && (
+                        <a
+                            href="/login"
+                            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            Login <ArrowRightIcon />
+                        </a>
+                    )}
+
+                    {isUserAuthPage && (
+                        <a
+                            href="/adminLogin"
+                            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            Admin Portal <ArrowRightIcon />
+                        </a>
+                    )}
+
+                    {isAdminAuthPage && (
+                        <a
+                            href="/login"
+                            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                        >
+                            Staff Login <ArrowRightIcon />
+                        </a>
+                    )}
 
 
 
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                    >
-                        {menuOpen ? <CloseIcon /> : <MenuIcon />}
-                    </button>
+                    {!hideNavLinks && (
+                        <button
+                            onClick={() => setMenuOpen(!menuOpen)}
+                            className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                        >
+                            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+                        </button>
+                    )}
                 </div>
             </nav>
 
-            {menuOpen && (
+            {!hideNavLinks && menuOpen && (
                 <div className="md:hidden px-6 pb-5 pt-2 bg-white dark:bg-[#020617] border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
                     {navLinks.map((l) => (
                         <a
@@ -127,12 +204,38 @@ const Navbar = () => {
                         </a>
                     ))}
                     <div className="flex gap-3 pt-2">
-                        <a href="/login" className="flex-1 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-center py-2.5 rounded-lg text-slate-700 dark:text-slate-300 hover:border-slate-300 transition">
-                            Login
-                        </a>
-                        <a href="/roles" className="flex-1 bg-[#2563EB] dark:bg-[#3B82F6] text-white text-sm font-semibold text-center py-2.5 rounded-lg hover:bg-blue-700 transition">
-                            Get Started
-                        </a>
+                        {isLandingPage && (
+                            <>
+                                <a href="/login" className="flex-1 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-center py-2.5 rounded-lg text-slate-700 dark:text-slate-300 hover:border-slate-300 transition">
+                                    Login
+                                </a>
+                                <a href="/roles" className="flex-1 bg-[#2563EB] dark:bg-[#3B82F6] text-white text-sm font-semibold text-center py-2.5 rounded-lg hover:bg-blue-700 transition">
+                                    Get Started
+                                </a>
+                            </>
+                        )}
+
+                        {isUserAuthPage && (
+                            <>
+                                <a href="/adminLogin" className="flex-1 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-center py-2.5 rounded-lg text-slate-700 dark:text-slate-300 hover:border-slate-300 transition">
+                                    Admin Login
+                                </a>
+                                <a href="/roles" className="flex-1 bg-[#2563EB] dark:bg-[#3B82F6] text-white text-sm font-semibold text-center py-2.5 rounded-lg hover:bg-blue-700 transition">
+                                    Roles
+                                </a>
+                            </>
+                        )}
+
+                        {isAdminAuthPage && (
+                            <>
+                                <a href="/login" className="flex-1 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-center py-2.5 rounded-lg text-slate-700 dark:text-slate-300 hover:border-slate-300 transition">
+                                    Staff Login
+                                </a>
+                                <a href="/adminRegister" className="flex-1 bg-[#2563EB] dark:bg-[#3B82F6] text-white text-sm font-semibold text-center py-2.5 rounded-lg hover:bg-blue-700 transition">
+                                    Admin Register
+                                </a>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

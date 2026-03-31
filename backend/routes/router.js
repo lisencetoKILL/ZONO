@@ -7,9 +7,11 @@ const AttendStudent = require("../model/attendStudent");
 const classroomController = require("../controllers/classroomController");
 const facultyController = require("../controllers/facultyController");
 const markAttendanceController = require("../controllers/markAttendanceController")
+const adminController = require('../controllers/adminController');
+const { requireUserAuth, requireRoles, requireStudentAuth } = require('../middleware/authMiddleware');
 
 
-router.get('/students', async (req, res) => {
+router.get('/students', requireUserAuth, requireRoles('staff', 'admin'), async (req, res) => {
     try {
         const students = await Student.find();
         res.json(students); // Send the selected student data as JSON
@@ -18,9 +20,9 @@ router.get('/students', async (req, res) => {
     }
 });
 
-router.post('/students/:studentId/report', reportController.createReport);
+router.post('/students/:studentId/report', requireUserAuth, requireRoles('staff', 'admin'), reportController.createReport);
 
-router.get('/attendStudent', async (req, res) => {
+router.get('/attendStudent', requireUserAuth, requireRoles('staff', 'admin'), async (req, res) => {
     try {
         const { year, department } = req.query; // Get year and department from query params
         const filter = {};
@@ -47,17 +49,22 @@ router.get("/session", attendStudentController.getStudentSession)
 
 
 //classroom routes
-router.post("/classrooms/add", classroomController.addClassroom);
+router.post("/classrooms/add", requireUserAuth, requireRoles('staff', 'admin'), classroomController.addClassroom);
 
 // Route to get all classrooms
-router.get("/classrooms", classroomController.getClassrooms);
+router.get("/classrooms", requireUserAuth, requireRoles('staff', 'admin'), classroomController.getClassrooms);
 // Update classroom details (Name, Department & Boundaries)
-router.put("/classrooms/update/:id", classroomController.updateClassroom);
+router.put("/classrooms/update/:id", requireUserAuth, requireRoles('staff', 'admin'), classroomController.updateClassroom);
 
-router.post("/checklocation", classroomController.checkIfInClassroom)
+router.post("/checklocation", requireStudentAuth, classroomController.checkIfInClassroom)
 
-router.post("/start-attendance", facultyController.startAttendance);
-router.post("/poll-attendance", attendStudentController.checkActiveAttendance)
-router.post('/mark-attendance', markAttendanceController.markAttendance);
+router.post("/start-attendance", requireUserAuth, requireRoles('staff', 'admin'), facultyController.startAttendance);
+router.post("/poll-attendance", requireStudentAuth, attendStudentController.checkActiveAttendance)
+router.post('/mark-attendance', requireStudentAuth, markAttendanceController.markAttendance);
+
+router.get('/admin/institution', requireUserAuth, requireRoles('admin'), adminController.getInstitutionMeta);
+router.get('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.getTeachers);
+router.post('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.createTeacher);
+router.get('/admin/analytics', requireUserAuth, requireRoles('admin'), adminController.getAttendanceAnalytics);
 
 module.exports = router;

@@ -5,6 +5,9 @@ const staffSchema = new mongoose.Schema({
     password: String,
     firstName: String,
     lastName: String,
+    role: { type: String, default: 'teacher' },
+    institutionId: { type: String, default: '' },
+    managedByAdmin: { type: String, default: '' },
 
 
 })

@@ -17,13 +17,14 @@ const Header = ({ children }) => {
         return document.documentElement.classList.contains('dark');
     });
 
-    const routeToStateMap = {
-        '/home': 'Dashboard',
-        '/logReport': 'LogReport',
-        '/attendence': 'Take Attendence',
+    const getActiveRoute = (pathname) => {
+        if (pathname === '/home') return 'Dashboard';
+        if (pathname === '/logReport' || pathname.startsWith('/report/')) return 'LogReport';
+        if (pathname === '/attendence') return 'Take Attendence';
+        return '';
     };
 
-    const active = routeToStateMap[location.pathname] || '';
+    const active = getActiveRoute(location.pathname);
 
     useEffect(() => {
         if (dark) {
@@ -42,7 +43,14 @@ const Header = ({ children }) => {
         if (fetchedBefore) {
             if (cachedUser) {
                 try {
-                    setSessionUser(JSON.parse(cachedUser));
+                    const parsedUser = JSON.parse(cachedUser);
+                    if (parsedUser?.role === 'staff') {
+                        setSessionUser(parsedUser);
+                    } else {
+                        setSessionUser(null);
+                        sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+                        sessionStorage.removeItem(SESSION_USER_FETCHED_KEY);
+                    }
                 } catch {
                     setSessionUser(null);
                 }
@@ -58,7 +66,7 @@ const Header = ({ children }) => {
                     credentials: 'include',
                 });
                 const data = await response.json();
-                if (data?.loggedIn && data?.user) {
+                if (data?.loggedIn && data?.user?.role === 'staff') {
                     setSessionUser(data.user);
                     sessionStorage.setItem(SESSION_USER_CACHE_KEY, JSON.stringify(data.user));
                 } else {
@@ -153,7 +161,7 @@ const Header = ({ children }) => {
                     <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-4">
                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Logged in as</p>
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">F</div>
+                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">{initials}</div>
                             <div className="overflow-hidden">
                                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{sessionUser?.name || 'Faculty Member'}</p>
                                 <p className="text-[10px] text-slate-500 truncate italic">{sessionUser?.email || 'Faculty Portal'}</p>

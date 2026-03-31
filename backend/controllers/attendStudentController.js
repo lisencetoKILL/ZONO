@@ -1,6 +1,7 @@
 const AttendStudent = require("../model/attendStudent");
 const Classroom = require("../model/classroom")
 const ActiveAttendanceSession = require("../model/activeAttendence");
+const { verifyPassword } = require('../utils/authUtils');
 
 exports.attendStudent = async (req, res) => {
     try {
@@ -27,7 +28,8 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        if (student.password !== password) {
+        const isValidPassword = await verifyPassword(password, student.password);
+        if (!isValidPassword) {
             return res.status(401).json({ message: "Incorrect password" });
         }
 
