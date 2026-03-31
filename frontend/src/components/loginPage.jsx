@@ -23,6 +23,39 @@ const LoginPage = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const autoLoginStaffFromSession = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/auth/session', {
+                    credentials: 'include',
+                });
+                const data = await response.json();
+
+                if (!isMounted) return;
+
+                if (data?.loggedIn && data?.user?.role === 'staff') {
+                    navigate('/home', { replace: true });
+                    return;
+                }
+            } catch (sessionError) {
+                // Keep user on login page if session check fails.
+            } finally {
+                if (isMounted) {
+                    setIsCheckingSession(false);
+                }
+            }
+        };
+
+        autoLoginStaffFromSession();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [navigate]);
 
     useEffect(() => {
         if (role !== 'parent') {
@@ -102,6 +135,20 @@ const LoginPage = () => {
         } finally {
             setIsLoading(false);
         }
+    }
+
+    if (isCheckingSession) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#020617] flex items-center justify-center px-6">
+                <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center shadow-sm">
+                    <div className="mx-auto mb-5 h-10 w-10 rounded-full border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 animate-spin" />
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Checking your session</h2>
+                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                        Signing you in automatically if a staff session is active.
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     return (

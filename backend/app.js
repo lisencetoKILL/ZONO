@@ -10,11 +10,10 @@ const parent = require("./model/parent");
 const SessionLog = require('./model/sessionLog');
 const studentController = require('./controllers/studentController');
 const router = require('./routes/router');
-const attendStudentModel = require("./model/attendStudent");
+const adminRegistrationRoutes = require('./routes/adminRegistrationRoutes');
 const adminController = require('./controllers/adminController');
 const parentAuthController = require('./controllers/parentAuthController');
 const { hashPassword, verifyPassword } = require('./utils/authUtils');
-const { requireUserAuth, requireRoles } = require('./middleware/authMiddleware');
 
 // ------------------ DATABASE CONNECTION ------------------
 mongoose.connect(process.env.MONGO_URI)
@@ -118,8 +117,6 @@ app.post('/login', (req, res) => {
         .catch(err => res.json({ message: "Error", error: err }));
 });
 
-app.post('/admin/register', adminController.registerAdmin);
-
 app.post('/admin/login', async (req, res) => {
     const result = await adminController.loginAdmin(req, res);
     if (res.headersSent) return result;
@@ -188,30 +185,12 @@ app.post('/auth/logout', async (req, res) => {
     }
 });
 
-// Check active session
-app.get('/home', (req, res) => {
-    res.json({
-        loggedIn: !!req.session.user,
-        user: req.session.user || null
-    });
-});
-
-// ------------------ ATTENDANCE DATA ------------------
-app.get('/api/attendStudent', requireUserAuth, requireRoles('staff', 'admin'), async (req, res) => {
-    try {
-        const filter = { ...req.query };
-        const students = await attendStudentModel.find(filter);
-        res.json(students);
-    } catch (error) {
-        res.status(500).json({ error: "Error fetching attendance data" });
-    }
-});
-
 // ------------------ QR DATA SUBMISSION ------------------
 app.post('/api', studentController.saveStudentData);
 
 // Use additional routes
 app.use('/api', router);
+app.use('/api/admin', adminRegistrationRoutes);
 
 // ------------------ START SERVER ------------------
 app.listen(port, () => {

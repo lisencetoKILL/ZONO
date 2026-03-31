@@ -3,11 +3,17 @@ const mongoose = require('mongoose');
 const institutionSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
-        code: { type: String, required: true, unique: true, uppercase: true, trim: true },
-        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
-        adminIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }],
+        address: { type: String, trim: true },
+        adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'admins' },
+        status: {
+            type: String,
+            enum: ['PENDING_APPROVAL', 'ACTIVE'],
+            default: 'PENDING_APPROVAL',
+        },
     },
-    { timestamps: true }
+    {
+        timestamps: { createdAt: true, updatedAt: false },
+    }
 );
 
-module.exports = mongoose.model('Institution', institutionSchema);
+module.exports = mongoose.model('institutions', institutionSchema);

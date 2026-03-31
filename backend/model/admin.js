@@ -4,10 +4,19 @@ const adminSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-        password: { type: String, required: true },
-        institutionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Institution', required: true },
+        phone: { type: String, required: true, trim: true },
+        role: { type: String, default: 'ADMIN' },
+        instituteId: { type: mongoose.Schema.Types.ObjectId, ref: 'institutions' },
+        status: {
+            type: String,
+            enum: ['PENDING_APPROVAL', 'ACTIVE'],
+            default: 'PENDING_APPROVAL',
+        },
+        firstLogin: { type: Boolean, default: true },
     },
-    { timestamps: true }
+    {
+        timestamps: { createdAt: true, updatedAt: false },
+    }
 );
 
-module.exports = mongoose.model('Admin', adminSchema);
+module.exports = mongoose.model('admins', adminSchema);
