@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import Header from './Header';
 
 const ParentTestPage = () => {
     const navigate = useNavigate();
@@ -58,10 +57,8 @@ const ParentTestPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#020617] text-[#0F172A] dark:text-[#E2E8F0] flex flex-col transition-colors duration-300">
-            <Navbar />
-
-            <main className="flex-1 px-6 py-10 sm:px-10 lg:px-16">
+        <Header>
+            <main className="flex-1 px-0 py-0 sm:px-2 lg:px-4">
                 <div className="max-w-4xl mx-auto">
                     <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm">
                         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
@@ -97,9 +94,7 @@ const ParentTestPage = () => {
                     </div>
                 </div>
             </main>
-
-            <Footer />
-        </div>
+        </Header>
     );
 };
 

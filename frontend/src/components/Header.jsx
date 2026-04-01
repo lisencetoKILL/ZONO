@@ -1,10 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon, Users, UserCog, ShieldCheck } from 'lucide-react';
 import { IoIosNotifications } from 'react-icons/io';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
 
-const SESSION_USER_CACHE_KEY = 'zono-session-user-cache';
-const SESSION_USER_FETCHED_KEY = 'zono-session-user-fetched';
+const ROLE_NAVIGATION = {
+    staff: [
+        { label: 'Dashboard', href: '/home', icon: LayoutDashboard },
+        { label: 'Log Report', href: '/logReport', icon: FileText },
+        { label: 'Attendance', href: '/attendence', icon: ClipboardCheck },
+    ],
+    admin: [
+        { label: 'Dashboard', href: '/adminDashboard', icon: LayoutDashboard },
+        { label: 'Teachers', href: '/adminDashboard/teachers', icon: Users },
+        { label: 'Profile', href: '/adminDashboard/profile', icon: UserCog },
+    ],
+    parent: [
+        { label: 'Parent Home', href: '/parentTest', icon: LayoutDashboard },
+    ],
+    zono_admin: [
+        { label: 'Control Center', href: ZONO_ADMIN_DASHBOARD_PATH, icon: ShieldCheck },
+    ],
+};
+
+const ROLE_LABELS = {
+    staff: 'Faculty Portal',
+    admin: 'Institution Admin Portal',
+    parent: 'Parent Portal',
+    zono_admin: 'Zono Admin Console',
+};
 
 const Header = ({ children }) => {
     const location = useLocation();
@@ -17,14 +41,12 @@ const Header = ({ children }) => {
         return document.documentElement.classList.contains('dark');
     });
 
-    const getActiveRoute = (pathname) => {
-        if (pathname === '/home') return 'Dashboard';
-        if (pathname === '/logReport' || pathname.startsWith('/report/')) return 'LogReport';
-        if (pathname === '/attendence') return 'Take Attendence';
-        return '';
-    };
+    const userRole = sessionUser?.role || 'staff';
+    const navItems = ROLE_NAVIGATION[userRole] || ROLE_NAVIGATION.staff;
 
-    const active = getActiveRoute(location.pathname);
+    const normalizedPath = location.pathname;
+    const activeItem = navItems.find((item) => normalizedPath === item.href);
+    const activeLabel = activeItem?.label || '';
 
     useEffect(() => {
         if (dark) {
@@ -37,59 +59,39 @@ const Header = ({ children }) => {
     }, [dark]);
 
     useEffect(() => {
-        const fetchedBefore = sessionStorage.getItem(SESSION_USER_FETCHED_KEY) === 'true';
-        const cachedUser = sessionStorage.getItem(SESSION_USER_CACHE_KEY);
-
-        if (fetchedBefore) {
-            if (cachedUser) {
-                try {
-                    const parsedUser = JSON.parse(cachedUser);
-                    if (parsedUser?.role === 'staff') {
-                        setSessionUser(parsedUser);
-                    } else {
-                        setSessionUser(null);
-                        sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
-                        sessionStorage.removeItem(SESSION_USER_FETCHED_KEY);
-                    }
-                } catch {
-                    setSessionUser(null);
-                }
-            } else {
-                setSessionUser(null);
-            }
-            return;
-        }
-
         const fetchSession = async () => {
             try {
                 const response = await fetch('http://localhost:3001/auth/session', {
                     credentials: 'include',
                 });
                 const data = await response.json();
-                if (data?.loggedIn && data?.user?.role === 'staff') {
+                if (data?.loggedIn && data?.user) {
                     setSessionUser(data.user);
-                    sessionStorage.setItem(SESSION_USER_CACHE_KEY, JSON.stringify(data.user));
-                } else {
-                    setSessionUser(null);
-                    sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
+                    return;
                 }
-            } catch (error) {
+
                 setSessionUser(null);
-                sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
-            } finally {
-                sessionStorage.setItem(SESSION_USER_FETCHED_KEY, 'true');
+            } catch {
+                setSessionUser(null);
             }
         };
 
         fetchSession();
-    }, []);
+    }, [location.pathname]);
 
-    const initials = (sessionUser?.name || 'Faculty')
+    const initials = (sessionUser?.name || 'User')
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part.charAt(0).toUpperCase())
-        .join('') || 'F';
+        .join('') || 'U';
+
+    const getLogoutRedirectPath = () => {
+        if (sessionUser?.role === 'admin') return '/adminLogin';
+        if (sessionUser?.role === 'parent') return '/login';
+        if (sessionUser?.role === 'zono_admin') return ZONO_ADMIN_LOGIN_PATH;
+        return '/login';
+    };
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
@@ -99,13 +101,9 @@ const Header = ({ children }) => {
                 credentials: 'include',
             });
             setSessionUser(null);
-            sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
-            sessionStorage.removeItem(SESSION_USER_FETCHED_KEY);
-            navigate('/login');
-        } catch (error) {
-            sessionStorage.removeItem(SESSION_USER_CACHE_KEY);
-            sessionStorage.removeItem(SESSION_USER_FETCHED_KEY);
-            navigate('/login');
+            navigate(getLogoutRedirectPath(), { replace: true });
+        } catch {
+            navigate(getLogoutRedirectPath(), { replace: true });
         } finally {
             setIsLoggingOut(false);
         }
@@ -123,38 +121,24 @@ const Header = ({ children }) => {
                 </div>
 
                 <nav className="flex-1 px-4 py-4 space-y-1">
-                    <Link
-                        to="/home"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${active === 'Dashboard'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                    >
-                        <LayoutDashboard className={`w-5 h-5 ${active === 'Dashboard' ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
-                        <span className="font-semibold text-sm">Dashboard</span>
-                    </Link>
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = normalizedPath === item.href;
 
-                    <Link
-                        to="/logReport"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${active === 'LogReport'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                    >
-                        <FileText className={`w-5 h-5 ${active === 'LogReport' ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
-                        <span className="font-semibold text-sm">LogReport</span>
-                    </Link>
-
-                    <Link
-                        to="/attendence"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${active === 'Take Attendence'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                    >
-                        <ClipboardCheck className={`w-5 h-5 ${active === 'Take Attendence' ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
-                        <span className="font-semibold text-sm">Take Attendence</span>
-                    </Link>
+                        return (
+                            <Link
+                                key={item.href}
+                                to={item.href}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
+                                <span className="font-semibold text-sm">{item.label}</span>
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 <div className="p-4 mt-auto">
@@ -164,7 +148,7 @@ const Header = ({ children }) => {
                             <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">{initials}</div>
                             <div className="overflow-hidden">
                                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{sessionUser?.name || 'Faculty Member'}</p>
-                                <p className="text-[10px] text-slate-500 truncate italic">{sessionUser?.email || 'Faculty Portal'}</p>
+                                <p className="text-[10px] text-slate-500 truncate italic">{sessionUser?.email || sessionUser?.username || 'Portal Session'}</p>
                             </div>
                         </div>
                     </div>
@@ -176,8 +160,8 @@ const Header = ({ children }) => {
                 {/* Header/Topnav */}
                 <header className="h-20 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/40 sticky top-0 z-40 px-6 sm:px-8 flex items-center justify-between gap-4">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1 hidden sm:block">Faculty Portal</p>
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{active}</h2>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1 hidden sm:block">{ROLE_LABELS[userRole] || 'Portal'}</p>
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{activeLabel || 'Dashboard'}</h2>
                     </div>
 
                     <div className="flex items-center gap-4">

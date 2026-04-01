@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-
-const LOADER_SECONDS = 3;
+import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
     const location = useLocation();
     const [isChecking, setIsChecking] = useState(true);
-    const [secondsLeft, setSecondsLeft] = useState(LOADER_SECONDS);
     const [session, setSession] = useState({ loggedIn: false, user: null });
 
     useEffect(() => {
         let isMounted = true;
-        let intervalId;
 
-        const checkSession = async () => {
+        const runChecks = async () => {
             try {
                 const response = await fetch('http://localhost:3001/auth/session', {
                     credentials: 'include',
@@ -30,25 +27,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
                 if (isMounted) {
                     setSession({ loggedIn: false, user: null });
                 }
-            }
-        };
-
-        const runChecks = async () => {
-            setSecondsLeft(LOADER_SECONDS);
-
-            intervalId = window.setInterval(() => {
-                if (!isMounted) return;
-                setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0));
-            }, 1000);
-
-            const minLoadingDelay = new Promise((resolve) => {
-                window.setTimeout(resolve, LOADER_SECONDS * 1000);
-            });
-
-            await Promise.all([checkSession(), minLoadingDelay]);
-
-            if (isMounted) {
-                setIsChecking(false);
+            } finally {
+                if (isMounted) {
+                    setIsChecking(false);
+                }
             }
         };
 
@@ -56,37 +38,21 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
         return () => {
             isMounted = false;
-            if (intervalId) {
-                window.clearInterval(intervalId);
-            }
         };
     }, []);
 
     if (isChecking) {
         return (
             <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#020617] flex items-center justify-center px-6">
-                <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center shadow-sm">
-                    <div className="mx-auto mb-5 h-10 w-10 rounded-full border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 animate-spin" />
-
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Checking your session</h2>
-
-                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                        Please wait while we securely sign you in.
-                    </p>
-
-                    <p className="mt-4 inline-block rounded-lg border border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 px-3 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300">
-                        We are gathering your data and getting you in.
-                    </p>
-
-                    <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {secondsLeft}s
-                    </p>
-                </div>
+                <div className="h-10 w-10 rounded-full border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 animate-spin" />
             </div>
         );
     }
 
     if (!session.loggedIn) {
+        if (allowedRoles?.includes('zono_admin')) {
+            return <Navigate to={ZONO_ADMIN_LOGIN_PATH} state={{ from: location }} replace />;
+        }
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
@@ -97,7 +63,22 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         if (session.user?.role === 'parent') {
             return <Navigate to="/parentTest" replace />;
         }
+        if (session.user?.role === 'zono_admin') {
+            return <Navigate to={ZONO_ADMIN_DASHBOARD_PATH} replace />;
+        }
         return <Navigate to="/home" replace />;
+    }
+
+    if (allowedRoles?.includes('staff') && session.user?.role === 'staff' && !session.user?.institutionId) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#020617] flex items-center justify-center px-6">
+                <div className="w-full max-w-xl rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-6 py-6 text-center">
+                    <p className="text-base font-semibold text-amber-800 dark:text-amber-300">
+                        You are not added to a institution contact institution admin
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     return children;

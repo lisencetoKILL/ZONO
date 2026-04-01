@@ -72,7 +72,7 @@ const AdminLoginPage = () => {
                             )}
 
                             <input
-                                className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50"
+                                className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                                 type="email"
                                 placeholder="admin@institution.edu"
                                 value={email}
@@ -81,7 +81,7 @@ const AdminLoginPage = () => {
                             />
 
                             <input
-                                className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50"
+                                className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                                 type="password"
                                 placeholder="Password"
                                 value={password}

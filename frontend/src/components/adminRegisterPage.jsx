@@ -216,7 +216,7 @@ const AdminRegisterPage = () => {
                                 <>
                                     <div className="space-y-1.5">
                                         <input
-                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50"
+                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                                             type="text"
                                             placeholder="Institution name"
                                             value={formData.instituteName}
@@ -230,7 +230,7 @@ const AdminRegisterPage = () => {
 
                                     <div className="space-y-1.5">
                                         <textarea
-                                            className="w-full px-4 py-3 min-h-[96px] rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 resize-none"
+                                            className="w-full px-4 py-3 min-h-[96px] rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-none"
                                             placeholder="Institution address (optional)"
                                             value={formData.instituteAddress}
                                             onChange={(e) => updateField('instituteAddress', e.target.value)}
@@ -243,7 +243,7 @@ const AdminRegisterPage = () => {
                                 <>
                                     <div className="space-y-1.5">
                                         <input
-                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50"
+                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                                             type="text"
                                             placeholder="Admin full name"
                                             value={formData.name}
@@ -257,7 +257,7 @@ const AdminRegisterPage = () => {
 
                                     <div className="space-y-1.5">
                                         <input
-                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50"
+                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                                             type="email"
                                             placeholder="admin@institution.edu"
                                             value={formData.email}
@@ -271,7 +271,7 @@ const AdminRegisterPage = () => {
 
                                     <div className="space-y-1.5">
                                         <input
-                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50"
+                                            className="w-full px-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                                             type="text"
                                             placeholder="Phone number"
                                             value={formData.phone}

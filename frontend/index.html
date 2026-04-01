@@ -16,6 +16,40 @@
 
 <body>
   <div id="root"></div>
+  <script>
+    (function () {
+      var g = typeof globalThis !== 'undefined' ? globalThis : window;
+
+      function patchTarget(target) {
+        if (!target || typeof target !== 'object') return;
+        if (typeof target.clearMarks !== 'function') target.clearMarks = function () {};
+        if (typeof target.clearMeasures !== 'function') target.clearMeasures = function () {};
+        if (typeof target.mark !== 'function') target.mark = function () {};
+        if (typeof target.measure !== 'function') target.measure = function () {};
+      }
+
+      patchTarget(g.performance);
+
+      var currentMgt = g.mgt;
+      patchTarget(currentMgt);
+
+      try {
+        Object.defineProperty(g, 'mgt', {
+          configurable: true,
+          enumerable: true,
+          get: function () {
+            return currentMgt;
+          },
+          set: function (value) {
+            currentMgt = value;
+            patchTarget(currentMgt);
+          },
+        });
+      } catch (e) {
+        // Ignore in restricted runtimes.
+      }
+    })();
+  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

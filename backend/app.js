@@ -11,9 +11,12 @@ const SessionLog = require('./model/sessionLog');
 const studentController = require('./controllers/studentController');
 const router = require('./routes/router');
 const adminRegistrationRoutes = require('./routes/adminRegistrationRoutes');
+const zonoAdminRoutes = require('./routes/zonoAdminRoutes');
 const adminController = require('./controllers/adminController');
 const parentAuthController = require('./controllers/parentAuthController');
 const { hashPassword, verifyPassword } = require('./utils/authUtils');
+
+const zonoAdminApiBasePath = process.env.ZONO_ADMIN_API_PATH || '/api/zono-secure-admin';
 
 // ------------------ DATABASE CONNECTION ------------------
 mongoose.connect(process.env.MONGO_URI)
@@ -45,6 +48,8 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
     }
 }));
 
@@ -87,6 +92,13 @@ app.post('/login', (req, res) => {
     staff.findOne({ email })
         .then(async user => {
             if (!user) return res.json({ message: "No record found" });
+
+            if (!user.institutionId) {
+                return res.status(403).json({
+                    message: 'You are not added to a institution contact institution admin',
+                });
+            }
+
             const isValidPassword = await verifyPassword(password, user.password);
             if (!isValidPassword)
                 return res.json({ message: "Failed", error: "Invalid password" });
@@ -191,6 +203,7 @@ app.post('/api', studentController.saveStudentData);
 // Use additional routes
 app.use('/api', router);
 app.use('/api/admin', adminRegistrationRoutes);
+app.use(zonoAdminApiBasePath, zonoAdminRoutes);
 
 // ------------------ START SERVER ------------------
 app.listen(port, () => {

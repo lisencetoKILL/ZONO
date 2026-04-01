@@ -140,13 +140,7 @@ const LoginPage = () => {
     if (isCheckingSession) {
         return (
             <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#020617] flex items-center justify-center px-6">
-                <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center shadow-sm">
-                    <div className="mx-auto mb-5 h-10 w-10 rounded-full border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 animate-spin" />
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Checking your session</h2>
-                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                        Signing you in automatically if a staff session is active.
-                    </p>
-                </div>
+                <div className="h-10 w-10 rounded-full border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 animate-spin" />
             </div>
         );
     }

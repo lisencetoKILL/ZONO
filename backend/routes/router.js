@@ -66,5 +66,10 @@ router.get('/admin/institution', requireUserAuth, requireRoles('admin'), adminCo
 router.get('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.getTeachers);
 router.post('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.createTeacher);
 router.get('/admin/analytics', requireUserAuth, requireRoles('admin'), adminController.getAttendanceAnalytics);
+router.get('/admin/profile', requireUserAuth, requireRoles('admin'), adminController.getAdminProfile);
+router.put('/admin/profile', requireUserAuth, requireRoles('admin'), adminController.updateAdminProfile);
+router.put('/admin/password', requireUserAuth, requireRoles('admin'), adminController.changeAdminPassword);
+router.get('/admin/invitations', requireUserAuth, requireRoles('admin'), adminController.listAdminInvitations);
+router.post('/admin/invitations', requireUserAuth, requireRoles('admin'), adminController.createAdminInvitations);
 
 module.exports = router;

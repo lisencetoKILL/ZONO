@@ -25,8 +25,17 @@ const requireStudentAuth = (req, res, next) => {
     return next();
 };
 
+const requireZonoAdminAuth = (req, res, next) => {
+    if (!req.session?.user || req.session.user.role !== 'zono_admin') {
+        return res.status(401).json({ message: 'ZonoAdmin authentication required' });
+    }
+
+    return next();
+};
+
 module.exports = {
     requireUserAuth,
     requireRoles,
     requireStudentAuth,
+    requireZonoAdminAuth,
 };
