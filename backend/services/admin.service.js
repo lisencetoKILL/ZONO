@@ -78,7 +78,7 @@ const registerAdmin = async ({ name, email, phone, instituteName, instituteAddre
             email: normalizedEmail,
             phone: normalizedPhone,
             role: 'ADMIN',
-            instituteId: institution._id,
+            institutionId: institution._id,
             status: 'PENDING_APPROVAL',
             firstLogin: true,
         });

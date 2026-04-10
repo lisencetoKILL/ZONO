@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon, Users, UserCog, ShieldCheck } from 'lucide-react';
-import { IoIosNotifications } from 'react-icons/io';
+import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon, Users, UserCog, ShieldCheck, BellRing } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
 
 const ROLE_NAVIGATION = {
@@ -9,6 +9,7 @@ const ROLE_NAVIGATION = {
         { label: 'Dashboard', href: '/home', icon: LayoutDashboard },
         { label: 'Log Report', href: '/logReport', icon: FileText },
         { label: 'Attendance', href: '/attendence', icon: ClipboardCheck },
+        { label: 'Notifications', href: '/notifications', icon: BellRing },
     ],
     admin: [
         { label: 'Dashboard', href: '/adminDashboard', icon: LayoutDashboard },
@@ -35,6 +36,7 @@ const Header = ({ children }) => {
     const navigate = useNavigate();
     const [sessionUser, setSessionUser] = useState(null);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [teacherInviteCount, setTeacherInviteCount] = useState(0);
     const [dark, setDark] = useState(() => {
         const saved = localStorage.getItem('sisi-dark');
         if (saved !== null) return saved === 'true';
@@ -42,7 +44,13 @@ const Header = ({ children }) => {
     });
 
     const userRole = sessionUser?.role || 'staff';
-    const navItems = ROLE_NAVIGATION[userRole] || ROLE_NAVIGATION.staff;
+    const staffHasInstitution = !!sessionUser?.institutionId;
+    const navItems = (() => {
+        const roleNav = ROLE_NAVIGATION[userRole] || ROLE_NAVIGATION.staff;
+        if (userRole !== 'staff') return roleNav;
+        if (staffHasInstitution) return roleNav;
+        return roleNav.filter((item) => item.href === '/home' || item.href === '/notifications');
+    })();
 
     const normalizedPath = location.pathname;
     const activeItem = navItems.find((item) => normalizedPath === item.href);
@@ -78,6 +86,55 @@ const Header = ({ children }) => {
 
         fetchSession();
     }, [location.pathname]);
+
+    useEffect(() => {
+        if (userRole !== 'staff' || !sessionUser?.email) {
+            setTeacherInviteCount(0);
+            return;
+        }
+
+        let isMounted = true;
+
+        const loadTeacherInviteCount = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/teacher/invitations?status=pending', {
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    if (isMounted) setTeacherInviteCount(0);
+                    return;
+                }
+
+                const data = await response.json();
+                if (isMounted) {
+                    setTeacherInviteCount(Array.isArray(data?.invitations) ? data.invitations.length : 0);
+                }
+            } catch {
+                if (isMounted) setTeacherInviteCount(0);
+            }
+        };
+
+        loadTeacherInviteCount();
+
+        const socket = io('http://localhost:3001', {
+            withCredentials: true,
+        });
+
+        socket.on('connect', () => {
+            socket.emit('join-teacher-room', { email: sessionUser.email });
+        });
+
+        socket.on('teacher-invite-created', loadTeacherInviteCount);
+        socket.on('teacher-invite-updated', loadTeacherInviteCount);
+
+        return () => {
+            isMounted = false;
+            socket.off('teacher-invite-created', loadTeacherInviteCount);
+            socket.off('teacher-invite-updated', loadTeacherInviteCount);
+            socket.disconnect();
+        };
+    }, [userRole, sessionUser?.email]);
 
     const initials = (sessionUser?.name || 'User')
         .split(' ')
@@ -124,6 +181,7 @@ const Header = ({ children }) => {
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = normalizedPath === item.href;
+                        const showTeacherBadge = userRole === 'staff' && item.href === '/notifications' && teacherInviteCount > 0;
 
                         return (
                             <Link
@@ -134,7 +192,14 @@ const Header = ({ children }) => {
                                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                             >
-                                <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
+                                <span className="relative inline-flex">
+                                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`} />
+                                    {showTeacherBadge && (
+                                        <span className="absolute -top-2 -left-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center border border-white dark:border-[#0F172A]">
+                                            {teacherInviteCount > 99 ? '99+' : teacherInviteCount}
+                                        </span>
+                                    )}
+                                </span>
                                 <span className="font-semibold text-sm">{item.label}</span>
                             </Link>
                         );
@@ -174,10 +239,11 @@ const Header = ({ children }) => {
                             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
 
-                        <button className="relative p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors group">
-                            <IoIosNotifications size={22} />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white dark:border-[#020617] rounded-full"></span>
-                        </button>
+                        {userRole !== 'staff' && (
+                            <button className="relative p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors group">
+                                <BellRing size={20} />
+                            </button>
+                        )}
                         <div className="h-8 w-[1px] bg-slate-200 dark:border-slate-800 mx-1"></div>
                      
 

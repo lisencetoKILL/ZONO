@@ -112,7 +112,12 @@ const AdminDashboard = () => {
             }, { withCredentials: true });
 
             setInviteResult(response.data?.result || null);
-            setSuccessMessage(`${response.data?.result?.createdCount || 0} invite(s) added successfully.`);
+            const createdCount = response.data?.result?.createdCount || 0;
+            if (createdCount > 0) {
+                setSuccessMessage(`${createdCount} invite(s) added successfully.`);
+            } else {
+                setSuccessMessage('No new invites were created.');
+            }
             setSingleInvite({ name: '', email: '' });
             setBulkRows([]);
             await loadInvitations(inviteFilter);

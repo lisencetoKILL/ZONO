@@ -1,10 +1,12 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
+const { Server } = require('socket.io');
 const staff = require("./model/staff");
 const parent = require("./model/parent");
 const SessionLog = require('./model/sessionLog');
@@ -15,6 +17,7 @@ const zonoAdminRoutes = require('./routes/zonoAdminRoutes');
 const adminController = require('./controllers/adminController');
 const parentAuthController = require('./controllers/parentAuthController');
 const { hashPassword, verifyPassword } = require('./utils/authUtils');
+const { setIo, teacherRoom, normalizeEmail } = require('./utils/socket');
 
 const zonoAdminApiBasePath = process.env.ZONO_ADMIN_API_PATH || '/api/zono-secure-admin';
 
@@ -25,6 +28,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ------------------ APP SETUP ------------------
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 3001;
 
 // ------------------ MIDDLEWARE ------------------
@@ -35,6 +39,23 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(express.json());
+
+const io = new Server(server, {
+    cors: {
+        origin: ['http://localhost:5173'],
+        credentials: true,
+    },
+});
+
+setIo(io);
+
+io.on('connection', (socket) => {
+    socket.on('join-teacher-room', (payload = {}) => {
+        const email = normalizeEmail(payload.email);
+        if (!email) return;
+        socket.join(teacherRoom(email));
+    });
+});
 
 // ------------------ SESSION SETUP ------------------
 app.use(session({
@@ -92,12 +113,6 @@ app.post('/login', (req, res) => {
     staff.findOne({ email })
         .then(async user => {
             if (!user) return res.json({ message: "No record found" });
-
-            if (!user.institutionId) {
-                return res.status(403).json({
-                    message: 'You are not added to a institution contact institution admin',
-                });
-            }
 
             const isValidPassword = await verifyPassword(password, user.password);
             if (!isValidPassword)
@@ -206,6 +221,6 @@ app.use('/api/admin', adminRegistrationRoutes);
 app.use(zonoAdminApiBasePath, zonoAdminRoutes);
 
 // ------------------ START SERVER ------------------
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

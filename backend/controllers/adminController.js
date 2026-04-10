@@ -5,6 +5,7 @@ const Attendance = require('../model/attendance');
 const Student = require('../model/student');
 const Invitation = require('../model/invitation');
 const { hashPassword, verifyPassword } = require('../utils/authUtils');
+const { emitToTeacher, normalizeEmail } = require('../utils/socket');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,6 +27,18 @@ const requireAdmin = (req, res) => {
     }
 
     return req.session.user;
+};
+
+const extractInstitutionIdFromAdmin = (adminDoc) => {
+    if (!adminDoc) return '';
+
+    const primary = adminDoc.institutionId;
+    if (primary) return String(primary._id || primary);
+
+    const legacy = adminDoc.instituteId || adminDoc?._doc?.instituteId;
+    if (legacy) return String(legacy._id || legacy);
+
+    return '';
 };
 
 exports.registerAdmin = async (req, res) => {
@@ -80,7 +93,7 @@ exports.loginAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const admin = await Admin.findOne({ email }).populate('instituteId');
+        const admin = await Admin.findOne({ email });
         if (!admin) {
             return res.json({ message: 'No record found' });
         }
@@ -94,13 +107,29 @@ exports.loginAdmin = async (req, res) => {
             return res.json({ message: 'Failed', error: 'Invalid password' });
         }
 
+        const institutionId = extractInstitutionIdFromAdmin(admin);
+        if (!institutionId) {
+            return res.status(400).json({ message: 'Admin account is not linked to any institution' });
+        }
+
+        const institution = await Institution.findById(institutionId).lean();
+        if (!institution) {
+            return res.status(404).json({ message: 'Linked institution not found' });
+        }
+
+        // One-time repair for legacy records saved with instituteId instead of institutionId.
+        if (!admin.institutionId) {
+            admin.institutionId = institutionId;
+            await admin.save();
+        }
+
         req.session.user = {
             id: String(admin._id),
             email: admin.email,
             role: 'admin',
             name: admin.name,
-            institutionId: String(admin.instituteId?._id || ''),
-            institutionName: admin.instituteId?.name || '',
+            institutionId,
+            institutionName: institution.name || '',
             loginAt: new Date().toISOString(),
         };
 
@@ -115,7 +144,18 @@ exports.getInstitutionMeta = async (req, res) => {
         const currentUser = requireAdmin(req, res);
         if (!currentUser) return;
 
-        const institution = await Institution.findById(currentUser.institutionId).lean();
+        let institutionId = currentUser.institutionId;
+
+        if (!institutionId) {
+            const admin = await Admin.findById(currentUser.id).select('institutionId instituteId').lean();
+            institutionId = extractInstitutionIdFromAdmin(admin);
+
+            if (institutionId && req.session?.user) {
+                req.session.user.institutionId = institutionId;
+            }
+        }
+
+        const institution = await Institution.findById(institutionId).lean();
         if (!institution) {
             return res.status(404).json({ message: 'Institution not found' });
         }
@@ -418,9 +458,12 @@ exports.createAdminInvitations = async (req, res) => {
         const created = [];
         const skipped = [];
 
+        const institution = await Institution.findById(currentUser.institutionId).select('name').lean();
+        const institutionName = institution?.name || '';
+
         for (const row of entries) {
             const name = String(row?.name || '').trim();
-            const email = String(row?.email || '').trim().toLowerCase();
+            const email = normalizeEmail(row?.email);
 
             if (!name || !email || !EMAIL_REGEX.test(email)) {
                 skipped.push({ name, email, reason: 'Invalid name/email' });
@@ -434,16 +477,27 @@ exports.createAdminInvitations = async (req, res) => {
             }
             seen.add(dedupeKey);
 
-            let existsInSystem = null;
             if (role === 'teacher') {
-                existsInSystem = await Staff.findOne({ email }).lean();
-            } else {
-                existsInSystem = await Student.findOne({ email }).lean();
-            }
+                const existingTeacher = await Staff.findOne({ email }).lean();
+                if (existingTeacher) {
+                    const currentInstitutionId = String(currentUser.institutionId || '').trim();
+                    const existingInstitutionId = String(existingTeacher.institutionId || '').trim();
 
-            if (existsInSystem) {
-                skipped.push({ name, email, reason: `${role} already exists` });
-                continue;
+                    if (existingInstitutionId) {
+                        if (existingInstitutionId === currentInstitutionId) {
+                            skipped.push({ name, email, reason: 'Teacher already linked to this institution' });
+                        } else {
+                            skipped.push({ name, email, reason: 'Teacher belongs to another institution' });
+                        }
+                        continue;
+                    }
+                }
+            } else {
+                const existingStudent = await Student.findOne({ email }).lean();
+                if (existingStudent) {
+                    skipped.push({ name, email, reason: `${role} already exists` });
+                    continue;
+                }
             }
 
             const existingInvite = await Invitation.findOne({
@@ -462,7 +516,8 @@ exports.createAdminInvitations = async (req, res) => {
                 name,
                 email,
                 role,
-                institutionId: currentUser.institutionId,
+                institutionId: String(currentUser.institutionId || ''),
+                institutionName,
                 invitedByAdmin: currentUser.id,
                 status: 'PENDING',
             });
@@ -474,6 +529,19 @@ exports.createAdminInvitations = async (req, res) => {
                 role: invite.role,
                 status: invite.status,
             });
+
+            if (role === 'teacher') {
+                emitToTeacher(email, 'teacher-invite-created', {
+                    id: String(invite._id),
+                    role: invite.role,
+                    name: invite.name,
+                    email: invite.email,
+                    institutionId: invite.institutionId,
+                    institutionName: invite.institutionName,
+                    status: invite.status,
+                    createdAt: invite.createdAt,
+                });
+            }
         }
 
         return res.status(201).json({
@@ -488,5 +556,117 @@ exports.createAdminInvitations = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to process invitations', error: error.message });
+    }
+};
+
+exports.listTeacherInvitations = async (req, res) => {
+    try {
+        if (!req.session?.user || req.session.user.role !== 'staff') {
+            return res.status(403).json({ message: 'Teacher access required' });
+        }
+
+        const teacherEmail = normalizeEmail(req.session.user.email);
+        if (!teacherEmail) {
+            return res.status(400).json({ message: 'Teacher email not available in session' });
+        }
+
+        const statusFilter = String(req.query?.status || 'pending').toUpperCase();
+        const filter = {
+            role: 'teacher',
+            email: teacherEmail,
+        };
+
+        if (statusFilter !== 'ALL') {
+            filter.status = statusFilter;
+        }
+
+        const invitations = await Invitation.find(filter)
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return res.json({ invitations });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch teacher invitations', error: error.message });
+    }
+};
+
+exports.respondTeacherInvitation = async (req, res) => {
+    try {
+        if (!req.session?.user || req.session.user.role !== 'staff') {
+            return res.status(403).json({ message: 'Teacher access required' });
+        }
+
+        const teacherEmail = normalizeEmail(req.session.user.email);
+        const invitationId = req.params?.invitationId;
+        const action = String(req.body?.action || '').toLowerCase();
+
+        if (!['accept', 'reject'].includes(action)) {
+            return res.status(400).json({ message: 'Action must be accept or reject' });
+        }
+
+        const invitation = await Invitation.findOne({
+            _id: invitationId,
+            role: 'teacher',
+            email: teacherEmail,
+        });
+
+        if (!invitation) {
+            return res.status(404).json({ message: 'Invitation not found' });
+        }
+
+        if (invitation.status !== 'PENDING') {
+            return res.status(409).json({ message: 'Invitation already responded' });
+        }
+
+        if (action === 'accept') {
+            const teacher = await Staff.findById(req.session.user.id);
+            if (!teacher) {
+                return res.status(404).json({ message: 'Teacher account not found' });
+            }
+
+            const currentInstitutionId = String(teacher.institutionId || '').trim();
+            const invitedInstitutionId = String(invitation.institutionId || '').trim();
+
+            if (!invitedInstitutionId) {
+                return res.status(400).json({ message: 'Invitation has invalid institution' });
+            }
+
+            if (currentInstitutionId && currentInstitutionId !== invitedInstitutionId) {
+                return res.status(409).json({ message: 'Teacher already linked to another institution' });
+            }
+
+            teacher.institutionId = invitedInstitutionId;
+            teacher.managedByAdmin = String(invitation.invitedByAdmin || '');
+            teacher.role = teacher.role || 'teacher';
+            await teacher.save();
+
+            if (req.session?.user) {
+                req.session.user.institutionId = invitedInstitutionId;
+            }
+
+            invitation.status = 'ACCEPTED';
+        } else {
+            invitation.status = 'REJECTED';
+        }
+
+        invitation.respondedAt = new Date();
+        invitation.respondedBy = String(req.session.user.id || '');
+        await invitation.save();
+
+        emitToTeacher(teacherEmail, 'teacher-invite-updated', {
+            id: String(invitation._id),
+            status: invitation.status,
+            respondedAt: invitation.respondedAt,
+        });
+
+        return res.json({
+            message: action === 'accept' ? 'Invitation accepted' : 'Invitation rejected',
+            invitation: {
+                id: String(invitation._id),
+                status: invitation.status,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to respond to invitation', error: error.message });
     }
 };

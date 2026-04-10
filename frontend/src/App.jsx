@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ParentTestPage from './components/parentTestPage';
 import ZonoAdminLoginPage from './components/zonoAdminLoginPage';
 import ZonoAdminDashboard from './components/zonoAdminDashboard';
+import TeacherNotificationsPage from './components/teacherNotificationsPage';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from './constants/zonoAdminPaths';
 
 const App = () => {
@@ -29,6 +30,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/home" element={<ProtectedRoute allowedRoles={['staff']}><Home /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute allowedRoles={['staff']}><TeacherNotificationsPage /></ProtectedRoute>} />
         <Route path="/parentTest" element={<ProtectedRoute allowedRoles={['parent']}><ParentTestPage /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -40,9 +42,9 @@ const App = () => {
         <Route path={ZONO_ADMIN_LOGIN_PATH} element={<ZonoAdminLoginPage />} />
         <Route path={ZONO_ADMIN_DASHBOARD_PATH} element={<ProtectedRoute allowedRoles={['zono_admin']}><ZonoAdminDashboard /></ProtectedRoute>} />
         <Route path="/roles" element={<Roles />} />
-        <Route path="/logReport" element={<ProtectedRoute allowedRoles={['staff']}><LogReport /></ProtectedRoute>} />
-        <Route path="/report/:studentId" element={<ProtectedRoute allowedRoles={['staff']}><Report /></ProtectedRoute>} />
-        <Route path="/attendence" element={<ProtectedRoute allowedRoles={['staff']}><Attendence /></ProtectedRoute>} />
+        <Route path="/logReport" element={<ProtectedRoute allowedRoles={['staff']} requireInstitution><LogReport /></ProtectedRoute>} />
+        <Route path="/report/:studentId" element={<ProtectedRoute allowedRoles={['staff']} requireInstitution><Report /></ProtectedRoute>} />
+        <Route path="/attendence" element={<ProtectedRoute allowedRoles={['staff']} requireInstitution><Attendence /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

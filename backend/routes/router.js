@@ -71,5 +71,7 @@ router.put('/admin/profile', requireUserAuth, requireRoles('admin'), adminContro
 router.put('/admin/password', requireUserAuth, requireRoles('admin'), adminController.changeAdminPassword);
 router.get('/admin/invitations', requireUserAuth, requireRoles('admin'), adminController.listAdminInvitations);
 router.post('/admin/invitations', requireUserAuth, requireRoles('admin'), adminController.createAdminInvitations);
+router.get('/teacher/invitations', requireUserAuth, requireRoles('staff'), adminController.listTeacherInvitations);
+router.post('/teacher/invitations/:invitationId/respond', requireUserAuth, requireRoles('staff'), adminController.respondTeacherInvitation);
 
 module.exports = router;

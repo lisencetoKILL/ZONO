@@ -10,18 +10,38 @@ import {
 } from "lucide-react";
 
 const Home = () => {
-
   const [counter, setCounter] = useState(0);
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
+  const [showInstitutionNotice, setShowInstitutionNotice] = useState(false);
+  const [hasInstitutionAccess, setHasInstitutionAccess] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
 
     const fetchStudents = async () => {
       try {
         setFetchError("");
+        setShowInstitutionNotice(false);
+
+        const sessionResponse = await fetch("http://localhost:3001/auth/session", {
+          credentials: 'include',
+        });
+
+        const sessionData = await sessionResponse.json();
+        const hasInstitution = !!sessionData?.user?.institutionId;
+        setHasInstitutionAccess(hasInstitution);
+
+        if (!hasInstitution) {
+          if (!isMounted) return;
+          setStudents([]);
+          setCounter(0);
+          setShowInstitutionNotice(true);
+          setFetchError("");
+          return;
+        }
 
         const response = await fetch("http://localhost:3001/api/students", {
           credentials: 'include',
@@ -53,13 +73,18 @@ const Home = () => {
         setFetchError(error.message || "Unable to load attendance right now");
 
       } finally {
-
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
 
       }
     };
 
     fetchStudents();
+
+    return () => {
+      isMounted = false;
+    };
 
   }, []);
 
@@ -141,6 +166,19 @@ const Home = () => {
 
     <Header>
 
+      {hasInstitutionAccess === false ? (
+        <div className="space-y-8">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm p-8">
+            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-3">
+              Institution access required
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">
+              You are not part of institution contact institute admin.
+            </p>
+          </div>
+        </div>
+      ) : (
+
       <div className="space-y-8">
 
         {/* Dashboard Header */}
@@ -174,7 +212,15 @@ const Home = () => {
 
           </div>
 
+          {showInstitutionNotice && (
+            <div className="relative z-10 mt-5 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">
+              You are not added to a institution contact institution admin.
+            </div>
+          )}
+
         </div>
+
+          <>
 
 
         {/* Stat Cards */}
@@ -381,8 +427,11 @@ const Home = () => {
           </table>
 
         </div>
+        </>
 
       </div>
+
+      )}
 
     </Header>
 
