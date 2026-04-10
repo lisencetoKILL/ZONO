@@ -228,6 +228,44 @@ exports.createTeacher = async (req, res) => {
     }
 };
 
+exports.unlinkTeacherFromInstitution = async (req, res) => {
+    try {
+        const currentUser = requireAdmin(req, res);
+        if (!currentUser) return;
+
+        const teacherId = String(req.params?.teacherId || '').trim();
+        if (!teacherId) {
+            return res.status(400).json({ message: 'Teacher id is required' });
+        }
+
+        const teacher = await Staff.findById(teacherId);
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+
+        const adminInstitutionId = String(currentUser.institutionId || '').trim();
+        const teacherInstitutionId = String(teacher.institutionId || '').trim();
+
+        if (!teacherInstitutionId || teacherInstitutionId !== adminInstitutionId) {
+            return res.status(403).json({ message: 'Teacher is not linked to your institution' });
+        }
+
+        teacher.institutionId = '';
+        teacher.managedByAdmin = '';
+        await teacher.save();
+
+        return res.json({
+            message: 'Teacher removed from institution successfully',
+            teacher: {
+                id: String(teacher._id),
+                email: teacher.email || '',
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to remove teacher from institution', error: error.message });
+    }
+};
+
 exports.getAttendanceAnalytics = async (req, res) => {
     try {
         const currentUser = requireAdmin(req, res);

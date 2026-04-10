@@ -36,6 +36,9 @@ const AdminDashboard = () => {
     const [inviteFilter, setInviteFilter] = useState('all');
     const [isSendingInvites, setIsSendingInvites] = useState(false);
     const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
+    const [teachers, setTeachers] = useState([]);
+    const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
+    const [removingTeacherId, setRemovingTeacherId] = useState('');
 
     const parseCsvText = (text) => {
         const rows = String(text || '')
@@ -76,6 +79,20 @@ const AdminDashboard = () => {
             setError(err.response?.data?.message || 'Failed to fetch invitations');
         } finally {
             setIsLoadingInvitations(false);
+        }
+    };
+
+    const loadTeachers = async () => {
+        setIsLoadingTeachers(true);
+        try {
+            const response = await axios.get('http://localhost:3001/api/admin/teachers', {
+                withCredentials: true,
+            });
+            setTeachers(response.data?.teachers || []);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to fetch teachers');
+        } finally {
+            setIsLoadingTeachers(false);
         }
     };
 
@@ -194,8 +211,27 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (currentSection === 'teachers') {
             loadInvitations(inviteFilter);
+            loadTeachers();
         }
     }, [currentSection, inviteFilter]);
+
+    const handleRemoveTeacher = async (teacherId) => {
+        setError('');
+        setSuccessMessage('');
+        setRemovingTeacherId(teacherId);
+
+        try {
+            const response = await axios.delete(`http://localhost:3001/api/admin/teachers/${teacherId}`, {
+                withCredentials: true,
+            });
+            setSuccessMessage(response.data?.message || 'Teacher removed from institution successfully.');
+            await loadTeachers();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to remove teacher from institution');
+        } finally {
+            setRemovingTeacherId('');
+        }
+    };
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
@@ -447,6 +483,36 @@ const AdminDashboard = () => {
                                         <p className="text-[11px] mt-1 uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold">
                                             {invite.role} | {invite.status}
                                         </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <h2 className="text-xl font-extrabold">Linked Teachers</h2>
+                                <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
+                                    {teachers.length} linked
+                                </span>
+                            </div>
+
+                            <div className="space-y-3 max-h-[360px] overflow-auto pr-1">
+                                {isLoadingTeachers && <p className="text-sm text-slate-500">Loading teachers...</p>}
+                                {!isLoadingTeachers && teachers.length === 0 && <p className="text-sm text-slate-500">No teachers linked to this institution.</p>}
+                                {!isLoadingTeachers && teachers.map((teacher) => (
+                                    <div key={teacher._id} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-3 flex items-center justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold truncate">{`${teacher.firstName || ''} ${teacher.lastName || ''}`.trim() || teacher.email}</p>
+                                            <p className="text-xs text-slate-500 truncate">{teacher.email}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveTeacher(teacher._id)}
+                                            disabled={removingTeacherId === teacher._id}
+                                            className="h-9 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold disabled:opacity-60"
+                                        >
+                                            {removingTeacherId === teacher._id ? 'Removing...' : 'Remove'}
+                                        </button>
                                     </div>
                                 ))}
                             </div>

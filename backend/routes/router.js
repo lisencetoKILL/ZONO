@@ -65,6 +65,7 @@ router.post('/mark-attendance', requireStudentAuth, markAttendanceController.mar
 router.get('/admin/institution', requireUserAuth, requireRoles('admin'), adminController.getInstitutionMeta);
 router.get('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.getTeachers);
 router.post('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.createTeacher);
+router.delete('/admin/teachers/:teacherId', requireUserAuth, requireRoles('admin'), adminController.unlinkTeacherFromInstitution);
 router.get('/admin/analytics', requireUserAuth, requireRoles('admin'), adminController.getAttendanceAnalytics);
 router.get('/admin/profile', requireUserAuth, requireRoles('admin'), adminController.getAdminProfile);
 router.put('/admin/profile', requireUserAuth, requireRoles('admin'), adminController.updateAdminProfile);
