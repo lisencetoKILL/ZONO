@@ -3,6 +3,7 @@ import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon, Users, Us
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
+import { clearSessionCache, fetchSessionCached, getCachedSession } from '../utils/sessionClient';
 
 const ROLE_NAVIGATION = {
     staff: [
@@ -34,7 +35,7 @@ const ROLE_LABELS = {
 const Header = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [sessionUser, setSessionUser] = useState(null);
+    const [sessionUser, setSessionUser] = useState(() => getCachedSession()?.user || null);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [teacherInviteCount, setTeacherInviteCount] = useState(0);
     const [dark, setDark] = useState(() => {
@@ -67,25 +68,32 @@ const Header = ({ children }) => {
     }, [dark]);
 
     useEffect(() => {
-        const fetchSession = async () => {
-            try {
-                const response = await fetch('http://localhost:3001/auth/session', {
-                    credentials: 'include',
-                });
-                const data = await response.json();
-                if (data?.loggedIn && data?.user) {
-                    setSessionUser(data.user);
-                    return;
-                }
+        let isMounted = true;
 
-                setSessionUser(null);
+        const syncSession = async () => {
+            try {
+                const data = await fetchSessionCached();
+                if (!isMounted) return;
+                setSessionUser(data?.loggedIn ? data?.user || null : null);
             } catch {
+                if (!isMounted) return;
                 setSessionUser(null);
             }
         };
 
-        fetchSession();
-    }, [location.pathname]);
+        const onSessionUpdated = () => {
+            const cached = getCachedSession();
+            setSessionUser(cached?.loggedIn ? cached?.user || null : null);
+        };
+
+        syncSession();
+        window.addEventListener('zono-session-updated', onSessionUpdated);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener('zono-session-updated', onSessionUpdated);
+        };
+    }, []);
 
     useEffect(() => {
         if (userRole !== 'staff' || !sessionUser?.email) {
@@ -158,8 +166,10 @@ const Header = ({ children }) => {
                 credentials: 'include',
             });
             setSessionUser(null);
+            clearSessionCache();
             navigate(getLogoutRedirectPath(), { replace: true });
         } catch {
+            clearSessionCache();
             navigate(getLogoutRedirectPath(), { replace: true });
         } finally {
             setIsLoggingOut(false);

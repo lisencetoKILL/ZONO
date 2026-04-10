@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
+import { fetchSessionCached, getCachedSession } from '../utils/sessionClient';
 
 const ProtectedRoute = ({ children, allowedRoles, requireInstitution = false }) => {
     const location = useLocation();
-    const [isChecking, setIsChecking] = useState(true);
-    const [session, setSession] = useState({ loggedIn: false, user: null });
+    const [session, setSession] = useState(() => getCachedSession() || { loggedIn: false, user: null });
+    const [isChecking, setIsChecking] = useState(() => !getCachedSession());
 
     useEffect(() => {
         let isMounted = true;
 
         const runChecks = async () => {
             try {
-                const response = await fetch('http://localhost:3001/auth/session', {
-                    credentials: 'include',
-                });
-                const data = await response.json();
+                const data = await fetchSessionCached();
 
                 if (isMounted) {
                     setSession({
@@ -39,7 +37,7 @@ const ProtectedRoute = ({ children, allowedRoles, requireInstitution = false }) 
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [location.pathname]);
 
     if (isChecking) {
         return (

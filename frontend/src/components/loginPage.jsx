@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { fetchSessionCached, setSessionCache } from '../utils/sessionClient';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -30,10 +31,7 @@ const LoginPage = () => {
 
         const autoLoginStaffFromSession = async () => {
             try {
-                const response = await fetch('http://localhost:3001/auth/session', {
-                    credentials: 'include',
-                });
-                const data = await response.json();
+                const data = await fetchSessionCached();
 
                 if (!isMounted) return;
 
@@ -101,6 +99,7 @@ const LoginPage = () => {
         );
 
         if (result.data?.message === 'Success') {
+            setSessionCache({ loggedIn: true, user: result.data?.user || null });
             navigate('/parentTest');
             return;
         }
@@ -118,6 +117,7 @@ const LoginPage = () => {
             if (role === 'staff') {
                 const result = await axios.post('http://localhost:3001/login', { email: identifier, password }, { withCredentials: true });
                 if (result.data.message === "Success") {
+                    setSessionCache({ loggedIn: true, user: result.data?.user || null });
                     navigate('/home');
                 } else {
                     setError(result.data.error || result.data.message || 'Login failed');

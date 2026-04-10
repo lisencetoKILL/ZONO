@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Header from "./Header";
+import { fetchSessionCached, getCachedSession } from '../utils/sessionClient';
 
 import {
   Users,
@@ -12,10 +13,14 @@ import {
 const Home = () => {
   const [counter, setCounter] = useState(0);
   const [students, setStudents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const cachedSession = getCachedSession();
+  const initialInstitutionAccess = cachedSession?.loggedIn
+    ? !!cachedSession?.user?.institutionId
+    : null;
+  const [isLoading, setIsLoading] = useState(initialInstitutionAccess === true);
   const [fetchError, setFetchError] = useState("");
   const [showInstitutionNotice, setShowInstitutionNotice] = useState(false);
-  const [hasInstitutionAccess, setHasInstitutionAccess] = useState(null);
+  const [hasInstitutionAccess, setHasInstitutionAccess] = useState(initialInstitutionAccess);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -25,12 +30,11 @@ const Home = () => {
       try {
         setFetchError("");
         setShowInstitutionNotice(false);
+        if (hasInstitutionAccess !== false) {
+          setIsLoading(true);
+        }
 
-        const sessionResponse = await fetch("http://localhost:3001/auth/session", {
-          credentials: 'include',
-        });
-
-        const sessionData = await sessionResponse.json();
+        const sessionData = await fetchSessionCached();
         const hasInstitution = !!sessionData?.user?.institutionId;
         setHasInstitutionAccess(hasInstitution);
 
@@ -166,6 +170,12 @@ const Home = () => {
 
     <Header>
 
+      {hasInstitutionAccess === null && (
+        <div className="flex items-center justify-center py-16">
+          <div className="h-9 w-9 rounded-full border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 animate-spin" />
+        </div>
+      )}
+
       {hasInstitutionAccess === false ? (
         <div className="space-y-8">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm p-8">
@@ -177,7 +187,7 @@ const Home = () => {
             </p>
           </div>
         </div>
-      ) : (
+      ) : hasInstitutionAccess === true ? (
 
       <div className="space-y-8">
 
@@ -431,7 +441,7 @@ const Home = () => {
 
       </div>
 
-      )}
+      ) : null}
 
     </Header>
 

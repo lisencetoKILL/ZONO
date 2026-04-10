@@ -642,6 +642,12 @@ exports.respondTeacherInvitation = async (req, res) => {
 
             if (req.session?.user) {
                 req.session.user.institutionId = invitedInstitutionId;
+                await new Promise((resolve, reject) => {
+                    req.session.save((err) => {
+                        if (err) return reject(err);
+                        return resolve();
+                    });
+                });
             }
 
             invitation.status = 'ACCEPTED';
@@ -665,6 +671,7 @@ exports.respondTeacherInvitation = async (req, res) => {
                 id: String(invitation._id),
                 status: invitation.status,
             },
+            sessionUser: req.session?.user || null,
         });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to respond to invitation', error: error.message });

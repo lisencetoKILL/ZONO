@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import Header from './Header';
+import { fetchSessionCached, setSessionCache } from '../utils/sessionClient';
 
 const statusPillClass = {
     PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
@@ -47,10 +48,7 @@ const TeacherNotificationsPage = () => {
 
         const syncSocket = async () => {
             try {
-                const response = await fetch('http://localhost:3001/auth/session', {
-                    credentials: 'include',
-                });
-                const data = await response.json();
+                const data = await fetchSessionCached();
                 const email = data?.user?.email;
 
                 if (!isMounted || !email) return;
@@ -101,6 +99,10 @@ const TeacherNotificationsPage = () => {
 
             if (!response.ok) {
                 throw new Error(data?.message || 'Failed to respond to invitation');
+            }
+
+            if (data?.sessionUser) {
+                setSessionCache({ loggedIn: true, user: data.sessionUser });
             }
 
             setSuccessMessage(data?.message || 'Invitation updated');
