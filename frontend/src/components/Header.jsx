@@ -44,9 +44,11 @@ const Header = ({ children }) => {
         return document.documentElement.classList.contains('dark');
     });
 
-    const userRole = sessionUser?.role || 'staff';
+    const userRole = sessionUser?.role || null;
     const staffHasInstitution = !!sessionUser?.institutionId;
     const navItems = (() => {
+        if (!userRole) return [];
+
         const roleNav = ROLE_NAVIGATION[userRole] || ROLE_NAVIGATION.staff;
         if (userRole !== 'staff') return roleNav;
         if (staffHasInstitution) return roleNav;
@@ -236,7 +238,7 @@ const Header = ({ children }) => {
                 <header className="h-20 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/40 sticky top-0 z-40 px-6 sm:px-8 flex items-center justify-between gap-4">
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1 hidden sm:block">{ROLE_LABELS[userRole] || 'Portal'}</p>
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{activeLabel || 'Dashboard'}</h2>
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{activeLabel || (userRole ? 'Dashboard' : '')}</h2>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -249,7 +251,7 @@ const Header = ({ children }) => {
                             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
 
-                        {userRole !== 'staff' && (
+                        {userRole && userRole !== 'staff' && (
                             <button className="relative p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-colors group">
                                 <BellRing size={20} />
                             </button>

@@ -1,5 +1,5 @@
 const SESSION_CACHE_KEY = 'zono-session-cache-v1';
-const SESSION_CACHE_TTL_MS = 15000;
+const SESSION_CACHE_TTL_MS = 30 * 60 * 1000;
 
 let memoryCache = null;
 
