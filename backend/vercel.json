@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "env": {
+    "FRONTEND_ORIGINS": "https://zono-system.vercel.app,https://zono-system-*.vercel.app"
+  },
   "builds": [
     {
       "src": "app.js",

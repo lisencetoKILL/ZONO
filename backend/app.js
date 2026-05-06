@@ -20,21 +20,24 @@ const { hashPassword, verifyPassword } = require('./utils/authUtils');
 const { setIo, teacherRoom, normalizeEmail } = require('./utils/socket');
 
 const zonoAdminApiBasePath = process.env.ZONO_ADMIN_API_PATH || '/api/zono-secure-admin';
-const rawFrontendOrigins = (process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN || process.env.FRONTEND_API || 'http://localhost:5173')
+const defaultFrontendOrigins = ['http://localhost:5173', 'https://zono-system.vercel.app'];
+const rawFrontendOrigins = (process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN || process.env.FRONTEND_API || defaultFrontendOrigins.join(','))
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+const frontendOrigins = rawFrontendOrigins.length ? rawFrontendOrigins : defaultFrontendOrigins;
 
 const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
 const allowedOrigins = new Set(
-    rawFrontendOrigins
+    frontendOrigins
         .filter((origin) => !origin.includes('*'))
         .map(normalizeOrigin)
 );
-const allowedOriginPatterns = rawFrontendOrigins
+const allowedOriginPatterns = frontendOrigins
     .filter((origin) => origin.includes('*'))
     .map((origin) => {
-        const escaped = origin.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*');
+        const normalized = normalizeOrigin(origin);
+        const escaped = normalized.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
         return new RegExp(`^${escaped}$`);
     });
 const isOriginAllowed = (origin) => {
