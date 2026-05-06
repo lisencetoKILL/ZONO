@@ -20,10 +20,18 @@ const { hashPassword, verifyPassword } = require('./utils/authUtils');
 const { setIo, teacherRoom, normalizeEmail } = require('./utils/socket');
 
 const zonoAdminApiBasePath = process.env.ZONO_ADMIN_API_PATH || '/api/zono-secure-admin';
-const frontendOrigins = (process.env.FRONTEND_API || 'http://localhost:5173')
+const frontendOrigins = (process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN || process.env.FRONTEND_API || 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (frontendOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+};
 
 // ------------------ DATABASE CONNECTION ------------------
 mongoose.connect(process.env.MONGO_URI)
@@ -35,11 +43,10 @@ const app = express();
 const server = http.createServer(app);
 const port = process.env.PORT || 3001;
 
+app.set('trust proxy', 1);
+
 // ------------------ MIDDLEWARE ------------------
-app.use(cors({
-    origin: frontendOrigins,
-    credentials: true
-}));
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -73,7 +80,7 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         secure: process.env.NODE_ENV === 'production',
     }
 }));
