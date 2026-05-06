@@ -20,14 +20,32 @@ const { hashPassword, verifyPassword } = require('./utils/authUtils');
 const { setIo, teacherRoom, normalizeEmail } = require('./utils/socket');
 
 const zonoAdminApiBasePath = process.env.ZONO_ADMIN_API_PATH || '/api/zono-secure-admin';
-const frontendOrigins = (process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN || process.env.FRONTEND_API || 'http://localhost:5173')
+const rawFrontendOrigins = (process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN || process.env.FRONTEND_API || 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+
+const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
+const allowedOrigins = new Set(
+    rawFrontendOrigins
+        .filter((origin) => !origin.includes('*'))
+        .map(normalizeOrigin)
+);
+const allowedOriginPatterns = rawFrontendOrigins
+    .filter((origin) => origin.includes('*'))
+    .map((origin) => {
+        const escaped = origin.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*');
+        return new RegExp(`^${escaped}$`);
+    });
+const isOriginAllowed = (origin) => {
+    if (!origin) return true;
+    const normalized = normalizeOrigin(origin);
+    if (allowedOrigins.has(normalized)) return true;
+    return allowedOriginPatterns.some((pattern) => pattern.test(normalized));
+};
 const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        if (frontendOrigins.includes(origin)) return callback(null, true);
+        if (isOriginAllowed(origin)) return callback(null, true);
         return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
