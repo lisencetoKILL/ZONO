@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import Header from './Header';
 import { fetchSessionCached, setSessionCache } from '../utils/sessionClient';
-import { API_BASE, SOCKET_URL } from '../constants/api';
+import { API_BASE, SOCKET_ENABLED, SOCKET_URL } from '../constants/api';
 
 const statusPillClass = {
     PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
@@ -53,6 +53,8 @@ const TeacherNotificationsPage = () => {
                 const email = data?.user?.email;
 
                 if (!isMounted || !email) return;
+
+                if (!SOCKET_ENABLED) return;
 
                 socket = io(SOCKET_URL, {
                     withCredentials: true,

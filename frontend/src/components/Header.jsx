@@ -3,7 +3,7 @@ import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon, Users, Us
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
-import { API_BASE, SOCKET_URL } from '../constants/api';
+import { API_BASE, SOCKET_ENABLED, SOCKET_URL } from '../constants/api';
 import { clearSessionCache, fetchSessionCached, getCachedSession } from '../utils/sessionClient';
 
 const ROLE_NAVIGATION = {
@@ -129,6 +129,12 @@ const Header = ({ children }) => {
         };
 
         loadTeacherInviteCount();
+
+        if (!SOCKET_ENABLED) {
+            return () => {
+                isMounted = false;
+            };
+        }
 
         const socket = io(SOCKET_URL, {
             withCredentials: true,
