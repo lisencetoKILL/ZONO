@@ -16,6 +16,7 @@ import ParentTestPage from './components/parentTestPage';
 import ZonoAdminLoginPage from './components/zonoAdminLoginPage';
 import ZonoAdminDashboard from './components/zonoAdminDashboard';
 import TeacherNotificationsPage from './components/teacherNotificationsPage';
+import TeacherParentsPage from './components/teacherParentsPage';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from './constants/zonoAdminPaths';
 
 const App = () => {
@@ -31,6 +32,7 @@ const App = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/home" element={<ProtectedRoute allowedRoles={['staff']}><Home /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute allowedRoles={['staff']}><TeacherNotificationsPage /></ProtectedRoute>} />
+        <Route path="/parents" element={<ProtectedRoute allowedRoles={['staff']} requireInstitution><TeacherParentsPage /></ProtectedRoute>} />
         <Route path="/parentTest" element={<ProtectedRoute allowedRoles={['parent']}><ParentTestPage /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -38,6 +40,7 @@ const App = () => {
         <Route path="/adminRegister" element={<AdminRegisterPage />} />
         <Route path="/adminDashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/adminDashboard/teachers" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/adminDashboard/parents" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/adminDashboard/profile" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path={ZONO_ADMIN_LOGIN_PATH} element={<ZonoAdminLoginPage />} />
         <Route path={ZONO_ADMIN_DASHBOARD_PATH} element={<ProtectedRoute allowedRoles={['zono_admin']}><ZonoAdminDashboard /></ProtectedRoute>} />

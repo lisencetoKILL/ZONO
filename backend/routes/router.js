@@ -8,6 +8,7 @@ const classroomController = require("../controllers/classroomController");
 const facultyController = require("../controllers/facultyController");
 const markAttendanceController = require("../controllers/markAttendanceController")
 const adminController = require('../controllers/adminController');
+const parentAuthController = require('../controllers/parentAuthController');
 const { requireUserAuth, requireRoles, requireStudentAuth } = require('../middleware/authMiddleware');
 
 
@@ -66,6 +67,10 @@ router.get('/admin/institution', requireUserAuth, requireRoles('admin'), adminCo
 router.get('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.getTeachers);
 router.post('/admin/teachers', requireUserAuth, requireRoles('admin'), adminController.createTeacher);
 router.delete('/admin/teachers/:teacherId', requireUserAuth, requireRoles('admin'), adminController.unlinkTeacherFromInstitution);
+router.get('/admin/parent-students', requireUserAuth, requireRoles('admin'), adminController.listStudentsForParentLinking);
+router.put('/admin/parent-students/:studentId/contact', requireUserAuth, requireRoles('admin'), adminController.updateStudentParentContact);
+router.get('/staff/parent-students', requireUserAuth, requireRoles('staff'), adminController.listStudentsForParentLinking);
+router.put('/staff/parent-students/:studentId/contact', requireUserAuth, requireRoles('staff'), adminController.updateStudentParentContact);
 router.get('/admin/analytics', requireUserAuth, requireRoles('admin'), adminController.getAttendanceAnalytics);
 router.get('/admin/profile', requireUserAuth, requireRoles('admin'), adminController.getAdminProfile);
 router.put('/admin/profile', requireUserAuth, requireRoles('admin'), adminController.updateAdminProfile);
@@ -74,5 +79,6 @@ router.get('/admin/invitations', requireUserAuth, requireRoles('admin'), adminCo
 router.post('/admin/invitations', requireUserAuth, requireRoles('admin'), adminController.createAdminInvitations);
 router.get('/teacher/invitations', requireUserAuth, requireRoles('staff'), adminController.listTeacherInvitations);
 router.post('/teacher/invitations/:invitationId/respond', requireUserAuth, requireRoles('staff'), adminController.respondTeacherInvitation);
+router.get('/parent/calendar', requireUserAuth, requireRoles('parent'), parentAuthController.getParentAttendanceCalendar);
 
 module.exports = router;

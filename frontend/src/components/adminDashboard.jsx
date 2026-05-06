@@ -8,6 +8,8 @@ const AdminDashboard = () => {
     const location = useLocation();
     const currentSection = location.pathname === '/adminDashboard/teachers'
         ? 'teachers'
+        : location.pathname === '/adminDashboard/parents'
+            ? 'parents'
         : location.pathname === '/adminDashboard/profile'
             ? 'profile'
             : 'overview';
@@ -39,6 +41,9 @@ const AdminDashboard = () => {
     const [teachers, setTeachers] = useState([]);
     const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
     const [removingTeacherId, setRemovingTeacherId] = useState('');
+    const [parentStudents, setParentStudents] = useState([]);
+    const [isLoadingParentStudents, setIsLoadingParentStudents] = useState(false);
+    const [savingParentContactId, setSavingParentContactId] = useState('');
 
     const parseCsvText = (text) => {
         const rows = String(text || '')
@@ -93,6 +98,25 @@ const AdminDashboard = () => {
             setError(err.response?.data?.message || 'Failed to fetch teachers');
         } finally {
             setIsLoadingTeachers(false);
+        }
+    };
+
+    const loadParentStudents = async () => {
+        setIsLoadingParentStudents(true);
+        try {
+            const response = await axios.get('http://localhost:3001/api/admin/parent-students', {
+                withCredentials: true,
+            });
+
+            const students = response.data?.students || [];
+            setParentStudents(students.map((student) => ({
+                ...student,
+                parentContactDraft: student.parentContact || '',
+            })));
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to fetch students for parent linking');
+        } finally {
+            setIsLoadingParentStudents(false);
         }
     };
 
@@ -213,6 +237,10 @@ const AdminDashboard = () => {
             loadInvitations(inviteFilter);
             loadTeachers();
         }
+
+        if (currentSection === 'parents') {
+            loadParentStudents();
+        }
     }, [currentSection, inviteFilter]);
 
     const handleRemoveTeacher = async (teacherId) => {
@@ -230,6 +258,38 @@ const AdminDashboard = () => {
             setError(err.response?.data?.message || 'Failed to remove teacher from institution');
         } finally {
             setRemovingTeacherId('');
+        }
+    };
+
+    const handleParentContactDraftChange = (studentId, value) => {
+        setParentStudents((prev) => prev.map((student) => (
+            String(student._id) === String(studentId)
+                ? { ...student, parentContactDraft: value }
+                : student
+        )));
+    };
+
+    const handleSaveParentContact = async (studentId) => {
+        const studentRow = parentStudents.find((student) => String(student._id) === String(studentId));
+        if (!studentRow) return;
+
+        setError('');
+        setSuccessMessage('');
+        setSavingParentContactId(String(studentId));
+
+        try {
+            const response = await axios.put(
+                `http://localhost:3001/api/admin/parent-students/${studentId}/contact`,
+                { parentContact: studentRow.parentContactDraft },
+                { withCredentials: true }
+            );
+
+            setSuccessMessage(response.data?.message || 'Parent contact updated successfully.');
+            await loadParentStudents();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update parent contact');
+        } finally {
+            setSavingParentContactId('');
         }
     };
 
@@ -586,6 +646,50 @@ const AdminDashboard = () => {
                                     {isChangingPassword ? 'Updating...' : 'Update Password'}
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {currentSection === 'parents' && (
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6">
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <h2 className="text-xl font-extrabold">Link Parent Contact With Students</h2>
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
+                                {parentStudents.length} students
+                            </span>
+                        </div>
+
+                        <div className="space-y-3 max-h-[520px] overflow-auto pr-1">
+                            {isLoadingParentStudents && <p className="text-sm text-slate-500">Loading students...</p>}
+                            {!isLoadingParentStudents && parentStudents.length === 0 && <p className="text-sm text-slate-500">No students found.</p>}
+
+                            {!isLoadingParentStudents && parentStudents.map((student) => (
+                                <div key={student._id} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+                                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-slate-900 dark:text-white truncate">{student.name}</p>
+                                            <p className="text-xs text-slate-500">Roll {student.roll || '-'} | {student.department || '-'} | {student.year || '-'}</p>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 w-full md:w-auto">
+                                            <input
+                                                className="w-full md:w-72 px-3 h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-sm"
+                                                placeholder="Parent contact number"
+                                                value={student.parentContactDraft || ''}
+                                                onChange={(e) => handleParentContactDraftChange(student._id, e.target.value)}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSaveParentContact(student._id)}
+                                                disabled={savingParentContactId === String(student._id)}
+                                                className="h-10 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold disabled:opacity-60"
+                                            >
+                                                {savingParentContactId === String(student._id) ? 'Saving...' : 'Save'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}

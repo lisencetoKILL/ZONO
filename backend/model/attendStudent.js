@@ -6,7 +6,8 @@ const attendStudentSchema = new mongoose.Schema({
     department: String,
     roll: Number,
     ien: Number,
-    password: String
+    password: String,
+    parentContact: { type: String, default: '' }
 
 })
 

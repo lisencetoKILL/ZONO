@@ -10,11 +10,13 @@ const ROLE_NAVIGATION = {
         { label: 'Dashboard', href: '/home', icon: LayoutDashboard },
         { label: 'Log Report', href: '/logReport', icon: FileText },
         { label: 'Attendance', href: '/attendence', icon: ClipboardCheck },
+        { label: 'Parent Link', href: '/parents', icon: Users },
         { label: 'Notifications', href: '/notifications', icon: BellRing },
     ],
     admin: [
         { label: 'Dashboard', href: '/adminDashboard', icon: LayoutDashboard },
         { label: 'Teachers', href: '/adminDashboard/teachers', icon: Users },
+        { label: 'Parents', href: '/adminDashboard/parents', icon: Users },
         { label: 'Profile', href: '/adminDashboard/profile', icon: UserCog },
     ],
     parent: [

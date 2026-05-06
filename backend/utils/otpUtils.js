@@ -2,6 +2,25 @@ const nodemailer = require('nodemailer');
 
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
+const normalizePhoneForSms = (phone = '') => {
+    const digits = String(phone || '').replace(/\D/g, '');
+    if (!digits) return '';
+
+    if (digits.length === 10) {
+        return `+91${digits}`;
+    }
+
+    if (digits.length === 12 && digits.startsWith('91')) {
+        return `+${digits}`;
+    }
+
+    if (digits.startsWith('0') && digits.length > 10) {
+        return `+${digits.slice(1)}`;
+    }
+
+    return digits.startsWith('+') ? digits : `+${digits}`;
+};
+
 const sendOtpEmail = async ({ to, otp, appName = 'Zono' }) => {
     const {
         SMTP_HOST,
@@ -36,7 +55,46 @@ const sendOtpEmail = async ({ to, otp, appName = 'Zono' }) => {
     return { sent: true };
 };
 
+const sendOtpSms = async ({ to, otp, appName = 'Zono' }) => {
+    const TEXTBELT_API_KEY = process.env.TEXTBELT_API_KEY;
+    if (!TEXTBELT_API_KEY) {
+        return { sent: false, reason: 'sms_api_not_configured' };
+    }
+
+    const formattedPhone = normalizePhoneForSms(to);
+    if (!formattedPhone) {
+        return { sent: false, reason: 'invalid_phone_number' };
+    }
+
+    const message = `${appName} OTP: ${otp}. Valid for 5 minutes.`;
+
+    const response = await fetch('https://textbelt.com/text', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone: formattedPhone,
+            message,
+            key: TEXTBELT_API_KEY,
+        }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+        return {
+            sent: false,
+            reason: data?.error || `textbelt_http_${response.status}`,
+        };
+    }
+
+    return { sent: true };
+};
+
 module.exports = {
     generateOtp,
     sendOtpEmail,
+    sendOtpSms,
+    normalizePhoneForSms,
 };

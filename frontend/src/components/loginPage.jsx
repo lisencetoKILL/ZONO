@@ -15,12 +15,11 @@ const LoginPage = () => {
     const hideRoleSelection = navState.hideRoleSelection || false;
 
     const [role, setRole] = useState(defaultRole); // 'staff' or 'parent'
-    const [identifier, setIdentifier] = useState(''); // email for staff, ien for parent
+    const [identifier, setIdentifier] = useState(''); // email for staff, parent mobile for OTP
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
     const [otpStep, setOtpStep] = useState('request');
     const [otpExpiresIn, setOtpExpiresIn] = useState(0);
-    const [devOtp, setDevOtp] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +59,6 @@ const LoginPage = () => {
             setOtpStep('request');
             setOtp('');
             setOtpExpiresIn(0);
-            setDevOtp('');
             setSuccessMessage('');
             return;
         }
@@ -74,27 +72,30 @@ const LoginPage = () => {
         setOtpStep('request');
         setOtp('');
         setOtpExpiresIn(0);
-        setDevOtp('');
     };
 
     const handleParentRequestOtp = async () => {
         const result = await axios.post(
             'http://localhost:3001/parent/request-otp',
-            { email: identifier },
+            { identifier },
             { withCredentials: true }
         );
 
         setOtpStep('verify');
         setOtp('');
         setOtpExpiresIn(Number(result.data?.otpExpiresInSeconds || 0));
-        setDevOtp(result.data?.devOtp || '');
+        if (result.data?.deliveryFallback && result.data?.devOtp) {
+            setSuccessMessage(`${result.data?.message || 'OTP generated'} OTP: ${result.data.devOtp}`);
+            return;
+        }
+
         setSuccessMessage(result.data?.message || 'OTP sent successfully');
     };
 
     const handleParentVerifyOtp = async () => {
         const result = await axios.post(
             'http://localhost:3001/parent/verify-otp',
-            { email: identifier, otp },
+            { identifier, otp },
             { withCredentials: true }
         );
 
@@ -227,7 +228,7 @@ const LoginPage = () => {
                                             }}
                                             className="text-xs font-bold underline decoration-2 underline-offset-2 text-blue-700 dark:text-blue-300"
                                         >
-                                            Use a different email
+                                            Use a different number
                                         </button>
                                     </div>
                                 </div>
@@ -235,7 +236,7 @@ const LoginPage = () => {
 
                             <div className="space-y-1.5">
                                 <label className="block text-slate-700 dark:text-slate-300 text-sm font-bold ml-1" htmlFor="identifier">
-                                    {role === 'parent' ? 'Parent Email Address' : 'Email Address'}
+                                    {role === 'parent' ? 'Parent Mobile Number' : 'Email Address'}
                                 </label>
                                 <div className="relative">
                                     <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
@@ -252,8 +253,8 @@ const LoginPage = () => {
                                     <input
                                         className="w-full pl-11 pr-4 h-14 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
                                         id="identifier"
-                                        type="email"
-                                        placeholder="name@example.com"
+                                        type={role === 'parent' ? 'text' : 'email'}
+                                        placeholder={role === 'parent' ? 'Enter parent mobile number' : 'name@example.com'}
                                         required
                                         value={identifier}
                                         onChange={(e) => setIdentifier(e.target.value)}
@@ -309,14 +310,9 @@ const LoginPage = () => {
                                     </div>
                                     <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                                         {otpStep === 'request'
-                                            ? 'Request OTP first, then enter the 6-digit code sent to your email.'
-                                            : 'Enter the 6-digit code sent to your email address.'}
+                                            ? 'Request OTP first, then enter the 6-digit code sent to your registered mobile number.'
+                                            : 'Enter the 6-digit code sent to your registered mobile number.'}
                                     </p>
-                                    {devOtp && (
-                                        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                                            Development OTP: {devOtp}
-                                        </div>
-                                    )}
                                 </div>
                             )}
 

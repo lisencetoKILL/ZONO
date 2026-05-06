@@ -4,10 +4,75 @@ const Staff = require('../model/staff');
 const Attendance = require('../model/attendance');
 const Student = require('../model/student');
 const Invitation = require('../model/invitation');
+const AttendStudent = require('../model/attendStudent');
+const Parent = require('../model/parent');
 const { hashPassword, verifyPassword } = require('../utils/authUtils');
 const { emitToTeacher, normalizeEmail } = require('../utils/socket');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\d{7,15}$/;
+
+const normalizeParentContact = (rawValue = '') => {
+    const value = String(rawValue || '').trim();
+    if (!value) return { type: 'unknown', value: '' };
+
+    const normalizedEmail = value.toLowerCase();
+    if (EMAIL_REGEX.test(normalizedEmail)) {
+        return { type: 'email', value: normalizedEmail };
+    }
+
+    const normalizedPhone = value.replace(/\D/g, '');
+    if (PHONE_REGEX.test(normalizedPhone)) {
+        return { type: 'phone', value: normalizedPhone };
+    }
+
+    return { type: 'unknown', value };
+};
+
+const generateParentEmailFromPhone = async (phone) => {
+    const base = `parent_${phone}`;
+    let suffix = 0;
+
+    while (true) {
+        const candidate = `${base}${suffix ? `_${suffix}` : ''}@zono.local`;
+        const exists = await Parent.findOne({ email: candidate }).lean();
+        if (!exists) {
+            return candidate;
+        }
+        suffix += 1;
+    }
+};
+
+const ensureParentAccountForContact = async ({ contactType, contactValue, studentName }) => {
+    if (contactType === 'email') {
+        const existing = await Parent.findOne({ email: contactValue });
+        if (existing) return existing;
+
+        const placeholderPassword = await hashPassword(`otp-only-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+        return Parent.create({
+            name: `Parent of ${studentName || 'Student'}`,
+            email: contactValue,
+            phone: '',
+            password: placeholderPassword,
+        });
+    }
+
+    if (contactType === 'phone') {
+        const existing = await Parent.findOne({ phone: contactValue });
+        if (existing) return existing;
+
+        const generatedEmail = await generateParentEmailFromPhone(contactValue);
+        const placeholderPassword = await hashPassword(`otp-only-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+        return Parent.create({
+            name: `Parent of ${studentName || 'Student'}`,
+            email: generatedEmail,
+            phone: contactValue,
+            password: placeholderPassword,
+        });
+    }
+
+    return null;
+};
 
 const generateInstitutionCode = (name = '') => {
     const base = name
@@ -27,6 +92,21 @@ const requireAdmin = (req, res) => {
     }
 
     return req.session.user;
+};
+
+const requireInstitutionUser = (req, res) => {
+    const user = req.session?.user;
+    if (!user || !['admin', 'staff'].includes(user.role)) {
+        res.status(403).json({ message: 'Institution user access required' });
+        return null;
+    }
+
+    if (!user.institutionId) {
+        res.status(403).json({ message: 'You are not linked to any institution' });
+        return null;
+    }
+
+    return user;
 };
 
 const extractInstitutionIdFromAdmin = (adminDoc) => {
@@ -263,6 +343,77 @@ exports.unlinkTeacherFromInstitution = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to remove teacher from institution', error: error.message });
+    }
+};
+
+exports.listStudentsForParentLinking = async (req, res) => {
+    try {
+        const currentUser = requireInstitutionUser(req, res);
+        if (!currentUser) return;
+
+        const students = await AttendStudent.find({})
+            .select('name roll year department parentContact')
+            .sort({ year: 1, department: 1, roll: 1 })
+            .lean();
+
+        return res.json({ students });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch students for parent linking', error: error.message });
+    }
+};
+
+exports.updateStudentParentContact = async (req, res) => {
+    try {
+        const currentUser = requireInstitutionUser(req, res);
+        if (!currentUser) return;
+
+        const studentId = String(req.params?.studentId || '').trim();
+        const parentContactInput = String(req.body?.parentContact || '').trim();
+
+        if (!studentId) {
+            return res.status(400).json({ message: 'Student id is required' });
+        }
+
+        if (!parentContactInput) {
+            return res.status(400).json({ message: 'Parent contact number is required' });
+        }
+
+        const parsedContact = normalizeParentContact(parentContactInput);
+        if (parsedContact.type === 'unknown') {
+            return res.status(400).json({ message: 'Parent contact must be a valid email or phone number' });
+        }
+
+        const student = await AttendStudent.findById(studentId);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        student.parentContact = parsedContact.value;
+        await student.save();
+
+        const parent = await ensureParentAccountForContact({
+            contactType: parsedContact.type,
+            contactValue: parsedContact.value,
+            studentName: student.name,
+        });
+
+        return res.json({
+            message: 'Parent contact updated successfully',
+            student: {
+                id: String(student._id),
+                name: student.name,
+                parentContact: student.parentContact,
+            },
+            parent: parent
+                ? {
+                    id: String(parent._id),
+                    email: parent.email,
+                    phone: parent.phone || '',
+                }
+                : null,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to update parent contact', error: error.message });
     }
 };
 
