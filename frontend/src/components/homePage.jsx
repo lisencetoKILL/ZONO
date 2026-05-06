@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "./Header";
 import { fetchSessionCached, getCachedSession } from '../utils/sessionClient';
+import { API_BASE } from '../constants/api';
 
 import {
   Users,
@@ -47,7 +48,7 @@ const Home = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:3001/api/students", {
+        const response = await fetch(`${API_BASE}/api/students`, {
           credentials: 'include',
         });
         const data = await response.json();

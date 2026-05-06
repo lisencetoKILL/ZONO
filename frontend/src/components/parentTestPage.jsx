@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
+import { API_BASE } from '../constants/api';
 
 const ParentTestPage = () => {
     const navigate = useNavigate();
@@ -31,7 +32,7 @@ const ParentTestPage = () => {
                 query.set('studentId', studentId || selectedStudentId);
             }
 
-            const response = await fetch(`http://localhost:3001/api/parent/calendar?${query.toString()}`, {
+            const response = await fetch(`${API_BASE}/api/parent/calendar?${query.toString()}`, {
                 credentials: 'include',
             });
 
@@ -65,7 +66,7 @@ const ParentTestPage = () => {
 
         const loadSession = async () => {
             try {
-                const response = await fetch('http://localhost:3001/auth/session', {
+                const response = await fetch(`${API_BASE}/auth/session`, {
                     credentials: 'include',
                 });
                 const data = await response.json();
@@ -100,7 +101,7 @@ const ParentTestPage = () => {
     const handleLogout = async () => {
         setIsLoggingOut(true);
         try {
-            await fetch('http://localhost:3001/auth/logout', {
+            await fetch(`${API_BASE}/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

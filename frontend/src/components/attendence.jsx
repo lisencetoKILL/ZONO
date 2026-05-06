@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import Header from "./Header";
+import { API_BASE } from '../constants/api';
 
 const Attendence = () => {
     const [selectedYear, setSelectedYear] = useState("Select Year");
@@ -30,8 +31,8 @@ const Attendence = () => {
     const fetchAttendanceData = async () => {
         try {
             const response = await fetch(
-                `http://localhost:3001/api/attendStudent?year=${selectedYear}&department=${selectedDepartment}`
-                , {
+                `${API_BASE}/api/attendStudent?year=${selectedYear}&department=${selectedDepartment}`,
+                {
                     credentials: 'include',
                 }
             );
@@ -52,7 +53,7 @@ const Attendence = () => {
         setIsSubmitting(true);
 
         try {
-            const res = await fetch("http://localhost:3001/api/start-attendance", {
+            const res = await fetch(`${API_BASE}/api/start-attendance`, {
                 method: "POST",
                 credentials: 'include',
                 headers: {

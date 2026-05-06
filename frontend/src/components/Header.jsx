@@ -3,6 +3,7 @@ import { LayoutDashboard, FileText, ClipboardCheck, LogOut, Sun, Moon, Users, Us
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { ZONO_ADMIN_DASHBOARD_PATH, ZONO_ADMIN_LOGIN_PATH } from '../constants/zonoAdminPaths';
+import { API_BASE, SOCKET_URL } from '../constants/api';
 import { clearSessionCache, fetchSessionCached, getCachedSession } from '../utils/sessionClient';
 
 const ROLE_NAVIGATION = {
@@ -109,7 +110,7 @@ const Header = ({ children }) => {
 
         const loadTeacherInviteCount = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/teacher/invitations?status=pending', {
+                const response = await fetch(`${API_BASE}/api/teacher/invitations?status=pending`, {
                     credentials: 'include',
                 });
 
@@ -129,7 +130,7 @@ const Header = ({ children }) => {
 
         loadTeacherInviteCount();
 
-        const socket = io('http://localhost:3001', {
+        const socket = io(SOCKET_URL, {
             withCredentials: true,
         });
 
@@ -165,7 +166,7 @@ const Header = ({ children }) => {
     const handleLogout = async () => {
         setIsLoggingOut(true);
         try {
-            await fetch('http://localhost:3001/auth/logout', {
+            await fetch(`${API_BASE}/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

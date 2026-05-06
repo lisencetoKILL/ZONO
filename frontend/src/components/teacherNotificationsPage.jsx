@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import Header from './Header';
 import { fetchSessionCached, setSessionCache } from '../utils/sessionClient';
+import { API_BASE, SOCKET_URL } from '../constants/api';
 
 const statusPillClass = {
     PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
@@ -20,7 +21,7 @@ const TeacherNotificationsPage = () => {
     const fetchInvitations = async () => {
         try {
             setError('');
-            const response = await fetch('http://localhost:3001/api/teacher/invitations?status=all', {
+            const response = await fetch(`${API_BASE}/api/teacher/invitations?status=all`, {
                 credentials: 'include',
             });
 
@@ -53,7 +54,7 @@ const TeacherNotificationsPage = () => {
 
                 if (!isMounted || !email) return;
 
-                socket = io('http://localhost:3001', {
+                socket = io(SOCKET_URL, {
                     withCredentials: true,
                 });
 
@@ -86,7 +87,7 @@ const TeacherNotificationsPage = () => {
         setActingInvitationId(invitationId);
 
         try {
-            const response = await fetch(`http://localhost:3001/api/teacher/invitations/${invitationId}/respond`, {
+            const response = await fetch(`${API_BASE}/api/teacher/invitations/${invitationId}/respond`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

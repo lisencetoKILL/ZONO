@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
+import { API_BASE } from '../constants/api';
 
 const Report = () => {
     const navigate = useNavigate();
@@ -21,7 +22,7 @@ const Report = () => {
         setIsSubmitting(true);  // Disable the button while submitting
 
         try {
-            const response = await fetch(`http://localhost:3001/api/students/${studentId}/report`, {
+            const response = await fetch(`${API_BASE}/api/students/${studentId}/report`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

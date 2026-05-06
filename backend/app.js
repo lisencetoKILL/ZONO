@@ -20,6 +20,10 @@ const { hashPassword, verifyPassword } = require('./utils/authUtils');
 const { setIo, teacherRoom, normalizeEmail } = require('./utils/socket');
 
 const zonoAdminApiBasePath = process.env.ZONO_ADMIN_API_PATH || '/api/zono-secure-admin';
+const frontendOrigins = (process.env.FRONTEND_API || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 // ------------------ DATABASE CONNECTION ------------------
 mongoose.connect(process.env.MONGO_URI)
@@ -33,7 +37,7 @@ const port = process.env.PORT || 3001;
 
 // ------------------ MIDDLEWARE ------------------
 app.use(cors({
-    origin: ['http://localhost:5173'], // Add more domains if needed
+    origin: frontendOrigins,
     credentials: true
 }));
 
@@ -42,7 +46,7 @@ app.use(express.json());
 
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173'],
+        origin: frontendOrigins,
         credentials: true,
     },
 });

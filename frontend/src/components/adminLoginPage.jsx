@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { API_BASE } from '../constants/api';
 
 const AdminLoginPage = () => {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ const AdminLoginPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:3001/admin/login', {
+            const response = await axios.post(`${API_BASE}/admin/login`, {
                 email,
                 password,
             }, { withCredentials: true });

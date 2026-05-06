@@ -4,6 +4,7 @@ import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { fetchSessionCached, setSessionCache } from '../utils/sessionClient';
+import { API_BASE } from '../constants/api';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -76,7 +77,7 @@ const LoginPage = () => {
 
     const handleParentRequestOtp = async () => {
         const result = await axios.post(
-            'http://localhost:3001/parent/request-otp',
+            `${API_BASE}/parent/request-otp`,
             { identifier },
             { withCredentials: true }
         );
@@ -94,7 +95,7 @@ const LoginPage = () => {
 
     const handleParentVerifyOtp = async () => {
         const result = await axios.post(
-            'http://localhost:3001/parent/verify-otp',
+            `${API_BASE}/parent/verify-otp`,
             { identifier, otp },
             { withCredentials: true }
         );
@@ -116,7 +117,7 @@ const LoginPage = () => {
 
         try {
             if (role === 'staff') {
-                const result = await axios.post('http://localhost:3001/login', { email: identifier, password }, { withCredentials: true });
+                const result = await axios.post(`${API_BASE}/login`, { email: identifier, password }, { withCredentials: true });
                 if (result.data.message === "Success") {
                     setSessionCache({ loggedIn: true, user: result.data?.user || null });
                     navigate('/home');

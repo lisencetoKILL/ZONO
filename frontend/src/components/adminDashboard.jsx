@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
+import { API_BASE } from '../constants/api';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -75,7 +76,7 @@ const AdminDashboard = () => {
     const loadInvitations = async (roleFilter = inviteFilter) => {
         setIsLoadingInvitations(true);
         try {
-            const response = await axios.get('http://localhost:3001/api/admin/invitations', {
+            const response = await axios.get(`${API_BASE}/api/admin/invitations`, {
                 params: { role: roleFilter },
                 withCredentials: true,
             });
@@ -90,7 +91,7 @@ const AdminDashboard = () => {
     const loadTeachers = async () => {
         setIsLoadingTeachers(true);
         try {
-            const response = await axios.get('http://localhost:3001/api/admin/teachers', {
+            const response = await axios.get(`${API_BASE}/api/admin/teachers`, {
                 withCredentials: true,
             });
             setTeachers(response.data?.teachers || []);
@@ -104,7 +105,7 @@ const AdminDashboard = () => {
     const loadParentStudents = async () => {
         setIsLoadingParentStudents(true);
         try {
-            const response = await axios.get('http://localhost:3001/api/admin/parent-students', {
+            const response = await axios.get(`${API_BASE}/api/admin/parent-students`, {
                 withCredentials: true,
             });
 
@@ -147,7 +148,7 @@ const AdminDashboard = () => {
         setIsSendingInvites(true);
 
         try {
-            const response = await axios.post('http://localhost:3001/api/admin/invitations', {
+            const response = await axios.post(`${API_BASE}/api/admin/invitations`, {
                 role: inviteRole,
                 entries,
             }, { withCredentials: true });
@@ -202,10 +203,10 @@ const AdminDashboard = () => {
     const fetchAdminData = async () => {
         try {
             const [sessionResponse, institutionResponse, analyticsResponse, profileResponse] = await Promise.all([
-                axios.get('http://localhost:3001/auth/session', { withCredentials: true }),
-                axios.get('http://localhost:3001/api/admin/institution', { withCredentials: true }),
-                axios.get('http://localhost:3001/api/admin/analytics', { withCredentials: true }),
-                axios.get('http://localhost:3001/api/admin/profile', { withCredentials: true }),
+                axios.get(`${API_BASE}/auth/session`, { withCredentials: true }),
+                axios.get(`${API_BASE}/api/admin/institution`, { withCredentials: true }),
+                axios.get(`${API_BASE}/api/admin/analytics`, { withCredentials: true }),
+                axios.get(`${API_BASE}/api/admin/profile`, { withCredentials: true }),
             ]);
 
             const sessionUser = sessionResponse.data?.user || null;
@@ -249,7 +250,7 @@ const AdminDashboard = () => {
         setRemovingTeacherId(teacherId);
 
         try {
-            const response = await axios.delete(`http://localhost:3001/api/admin/teachers/${teacherId}`, {
+            const response = await axios.delete(`${API_BASE}/api/admin/teachers/${teacherId}`, {
                 withCredentials: true,
             });
             setSuccessMessage(response.data?.message || 'Teacher removed from institution successfully.');
@@ -279,7 +280,7 @@ const AdminDashboard = () => {
 
         try {
             const response = await axios.put(
-                `http://localhost:3001/api/admin/parent-students/${studentId}/contact`,
+                `${API_BASE}/api/admin/parent-students/${studentId}/contact`,
                 { parentContact: studentRow.parentContactDraft },
                 { withCredentials: true }
             );
@@ -300,7 +301,7 @@ const AdminDashboard = () => {
         setIsSavingProfile(true);
 
         try {
-            const response = await axios.put('http://localhost:3001/api/admin/profile', {
+            const response = await axios.put(`${API_BASE}/api/admin/profile`, {
                 name: profileForm.name,
                 email: profileForm.email,
                 phone: profileForm.phone,
@@ -329,7 +330,7 @@ const AdminDashboard = () => {
         setIsChangingPassword(true);
 
         try {
-            const response = await axios.put('http://localhost:3001/api/admin/password', {
+            const response = await axios.put(`${API_BASE}/api/admin/password`, {
                 newPassword: passwordForm.newPassword,
             }, { withCredentials: true });
 

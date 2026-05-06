@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ZONO_ADMIN_API_BASE, ZONO_ADMIN_DASHBOARD_PATH } from '../constants/zonoAdminPaths';
+import { API_BASE } from '../constants/api';
 
 const ZonoAdminLoginPage = () => {
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ const ZonoAdminLoginPage = () => {
 
         const checkSession = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/auth/session', { withCredentials: true });
+                const response = await axios.get(`${API_BASE}/auth/session`, { withCredentials: true });
                 if (!isMounted) return;
 
                 if (response.data?.loggedIn && response.data?.user?.role === 'zono_admin') {

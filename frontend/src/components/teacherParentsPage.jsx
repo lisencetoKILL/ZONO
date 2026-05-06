@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header';
+import { API_BASE } from '../constants/api';
 
 const TeacherParentsPage = () => {
     const [students, setStudents] = useState([]);
@@ -13,7 +14,7 @@ const TeacherParentsPage = () => {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3001/api/staff/parent-students', {
+            const response = await fetch(`${API_BASE}/api/staff/parent-students`, {
                 credentials: 'include',
             });
             const data = await response.json();
@@ -55,7 +56,7 @@ const TeacherParentsPage = () => {
         setSuccessMessage('');
 
         try {
-            const response = await fetch(`http://localhost:3001/api/staff/parent-students/${studentId}/contact`, {
+            const response = await fetch(`${API_BASE}/api/staff/parent-students/${studentId}/contact`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

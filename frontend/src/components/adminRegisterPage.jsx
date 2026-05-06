@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { API_BASE } from '../constants/api';
 
 const AdminRegisterPage = () => {
     const [step, setStep] = useState(1);
@@ -103,7 +104,7 @@ const AdminRegisterPage = () => {
         setIsLoading(true);
 
         try {
-            await axios.post('http://localhost:3001/api/admin/register', {
+            await axios.post(`${API_BASE}/api/admin/register`, {
                 name: formData.name.trim(),
                 email: formData.email.trim(),
                 phone: formData.phone.trim(),

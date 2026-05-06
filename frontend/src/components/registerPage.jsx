@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { API_BASE } from '../constants/api';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ const RegisterPage = () => {
         setIsLoading(true);
 
         try {
-            const result = await axios.post('http://localhost:3001/register', { name, email, password, confirmPassword, role });
+            const result = await axios.post(`${API_BASE}/register`, { name, email, password, confirmPassword, role });
             if (result.data) {
                 navigate('/login', { state: { role: role, hideRoleSelection: false } });
             } else {

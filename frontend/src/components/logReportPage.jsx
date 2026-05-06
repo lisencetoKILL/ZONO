@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
+import { API_BASE } from '../constants/api';
 
 const LogReportPage = () => {
     const [students, setStudents] = useState([]);
@@ -11,7 +12,7 @@ const LogReportPage = () => {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/students', {
+                const response = await fetch(`${API_BASE}/api/students`, {
                     credentials: 'include',
                 });
                 const data = await response.json();

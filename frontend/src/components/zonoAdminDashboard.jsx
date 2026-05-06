@@ -5,6 +5,7 @@ import {
     ZONO_ADMIN_API_BASE,
     ZONO_ADMIN_LOGIN_PATH,
 } from '../constants/zonoAdminPaths';
+import { API_BASE } from '../constants/api';
 
 const ZonoAdminDashboard = () => {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ const ZonoAdminDashboard = () => {
             setError('');
 
             const [sessionRes, summaryRes, institutionsRes] = await Promise.all([
-                axios.get('http://localhost:3001/auth/session', { withCredentials: true }),
+                axios.get(`${API_BASE}/auth/session`, { withCredentials: true }),
                 axios.get(`${ZONO_ADMIN_API_BASE}/summary`, { withCredentials: true }),
                 axios.get(`${ZONO_ADMIN_API_BASE}/institutions`, {
                     params: { status: selectedFilter },
@@ -79,7 +80,7 @@ const ZonoAdminDashboard = () => {
     };
 
     const handleLogout = async () => {
-        await axios.post('http://localhost:3001/auth/logout', {}, { withCredentials: true });
+        await axios.post(`${API_BASE}/auth/logout`, {}, { withCredentials: true });
         navigate(ZONO_ADMIN_LOGIN_PATH, { replace: true });
     };
 

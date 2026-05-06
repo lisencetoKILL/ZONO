@@ -1,3 +1,5 @@
+import { API_BASE } from '../constants/api';
+
 const SESSION_CACHE_KEY = 'zono-session-cache-v1';
 const SESSION_CACHE_TTL_MS = 30 * 60 * 1000;
 
@@ -60,7 +62,7 @@ export const fetchSessionCached = async ({ force = false } = {}) => {
         if (cached) return cached;
     }
 
-    const response = await fetch('http://localhost:3001/auth/session', {
+    const response = await fetch(`${API_BASE}/auth/session`, {
         credentials: 'include',
     });
 
